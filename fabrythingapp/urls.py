@@ -1,6 +1,7 @@
 from django.urls import path
 from fabrythingapp import views
 from fabrythingapp.views import category_list_view, category_products, product_details_view
+from django.conf.urls.static import static
 
 app_name = "fabrythingapp"
 
