@@ -1,0 +1,4 @@
+Alias /media/ /home/fabrythi/fabrything/media
+<Directory /home/fabrythi/fabrything/media>
+    Require all granted
+</Directory>

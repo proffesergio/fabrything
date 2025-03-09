@@ -2,3 +2,7 @@
     Header set Access-Control-Allow-Origin "https://www.fabrything.com" 
     Header set Access-Control-Allow-Headers "X-Requested-With" 
 </IfModule>
+<FilesMatch "\.(jpg|jpeg|png|gif|ico|svg|webp|mp4|pdf)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
