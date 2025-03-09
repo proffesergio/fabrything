@@ -134,8 +134,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Production subdomain for media
-MEDIA_ROOT = "/home/fabrythi/media.fabrything.com/"
-MEDIA_URL = "https://media.fabrything.com/"
+# MEDIA_ROOT = "/home/fabrythi/media.fabrything.com/"
+# MEDIA_URL = "https://media.fabrything.com/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
