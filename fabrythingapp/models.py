@@ -97,7 +97,7 @@ class Vendor(models.Model):
 class Product(models.Model):
     pid = ShortUUIDField(unique=True, length=10, max_length=20, prefix="prod", alphabet="0123456789abcd")
     title = models.CharField(max_length=100)
-    image = models.ImageField(upload_to="Product Image")
+    image = models.ImageField(upload_to="products")
     description = models.TextField(null=True, blank=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
@@ -146,7 +146,7 @@ class ProductImages(models.Model):
     date = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name_plural = "Product Images"
+        verbose_name_plural = "ProductImages"
 
 # Cart, Order, OrderItems, Address
 class CartOrder(models.Model):
