@@ -146,7 +146,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 JAZZMIN_SETTINGS = {
     'site_header': 'Fabrything Admin Panel',
     # 'site_brand': 'Fabric & Everything',
-    # 'site_logo': 'assets/images/logo_wh.png',
+    'site_logo': 'assets/images/icon_small.png',
     'copyright': 'Fabrything',
 }
 
