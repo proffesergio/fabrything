@@ -126,6 +126,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# STATIC_ROOT = "home/fabrythi/fabrything/static"
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
@@ -145,7 +146,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 JAZZMIN_SETTINGS = {
     'site_header': 'Fabrything Admin Panel',
     # 'site_brand': 'Fabric & Everything',
-    'site_logo': 'assets/images/logo_wh.png',
+    # 'site_logo': 'assets/images/logo_wh.png',
     'copyright': 'Fabrything',
 }
 
