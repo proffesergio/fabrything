@@ -1,6 +1,7 @@
-from django.shortcuts import render
-from fabrythingapp.models import Product, Category, Vendor, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand
+from django.shortcuts import render, get_object_or_404
+from fabrythingapp.models import Product, Category, Vendor, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, User
 from django.db.models import Count
+from taggit.models import Tag
 
 
 # Create your views here.
@@ -51,12 +52,28 @@ def category_products(requests, cid):
 
 def product_details_view(requests, pid):
     product = Product.objects.get(pid=pid)
+    related_products = Product.objects.filter(category=product.category).exclude(pid=pid)
+
 
     product_image = product.product_images.all()
 
     context = {
         'product': product,
         'product_image': product_image,
+        'related_products': related_products,
     }
-
     return render(requests, 'core/product-details.html', context)
+
+def tag_list(request, tag_slug=None):
+    products = Product.objects.filter(product_status='published').order_by('-id')
+
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        products = products.filter(tags__in=[tag])
+
+        context = {
+            'products':products,
+            'tag': tag,
+        }
+        return render(request, 'core/tag.html', context)

@@ -2,6 +2,7 @@ from django.db import models
 from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe
 from userauthapp.models import User
+from taggit.managers import TaggableManager
 
 # creating tuples
 STATUS_CHOICE = (
@@ -18,11 +19,11 @@ STATUS = (
 )
 
 RATING = (
-    (1, "★☆☆☆☆"),
-    (2, "★★☆☆☆"),
-    (3, "★★★☆☆"),
-    (4, "★★★★☆"),
-    (5, "★★★★★"),
+    ('1', "★☆☆☆☆"),
+    ('2', "★★☆☆☆"),
+    ('3', "★★★☆☆"),
+    ('4', "★★★★☆"),
+    ('5', "★★★★★"),
 )
 
 SIZES = (
@@ -113,16 +114,18 @@ class Product(models.Model):
     stock_count = models.CharField(max_length=100, default="10", null=True, blank=True)
     sizes = models.CharField(choices=SIZES, max_length=10, default="L", null=True, blank=True)
     # tags = models.ForeignKey(Tags, on_delete=models.SET_NULL, null=True)
-
+    rating = models.CharField(choices=RATING, max_length=100, default=str(4), null=True, blank=True)
     product_status = models.CharField(choices=STATUS, max_length=10, default="in_review")
     status = models.BooleanField(default=True)
     in_stock = models.BooleanField(default=True)
     featured = models.BooleanField(default=False)
-    digital = models.BooleanField(default=False)
+    # digital = models.BooleanField(default=False)
 
     sku = ShortUUIDField(unique=True, length=10, max_length=20, prefix="vend", alphabet="1234567890")
     date = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(null=True, blank=True)
+
+    tags = TaggableManager(blank=True)
 
     class Meta:
         verbose_name_plural = "Products"
@@ -181,7 +184,7 @@ class CartOrderItems(models.Model):
 class ProductReview(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-    review = models.TextField()
+    review = models.TextField(default=2)
     rating = models.IntegerField(choices=RATING, default=None)
     date = models.DateTimeField(auto_now_add=True)
 
@@ -215,3 +218,6 @@ class Address(models.Model):
 
     class Meta:
         verbose_name_plural = "Addresses"
+
+    def get_address (self):
+        return self.address 

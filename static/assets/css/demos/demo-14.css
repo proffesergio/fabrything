@@ -323,7 +323,9 @@
 }
 
 .product.product-sm {
-    align-items: center
+    align-items: center;    
+    background-color: #ffdee900;
+    background-image: linear-gradient(100deg, #ffdee900 0%, #01102c27 100%);
 }
 
 .product.product-sm .product-media {
@@ -449,7 +451,7 @@
 
 .product-cat {
     color: #ccc;
-    text-transform: uppercase;
+    text-transform: none;
     margin-bottom: 1.2rem
 }
 
@@ -641,7 +643,7 @@
 
 .widget-products .products {
     padding: 0;
-    margin: 0
+    margin: 0;
 }
 
 .widget-products .product:last-child {
@@ -994,7 +996,7 @@
     }
 }
 .cat-blocks-container {
-    padding-top: 1.30rem;
+    padding-top: 1.50rem;
     border-radius: 10px;
 }
 
