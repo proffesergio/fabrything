@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from fabrythingapp.models import Product, Category, Vendor, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, User
-from django.db.models import Count
+from django.db.models import Count, Avg
 from taggit.models import Tag
 
 
@@ -53,6 +53,8 @@ def category_products(requests, cid):
 def product_details_view(requests, pid):
     product = Product.objects.get(pid=pid)
     related_products = Product.objects.filter(category=product.category).exclude(pid=pid)
+    reviews = ProductReview.objects.filter(product=product)
+    avg_rating = ProductReview.objects.filter(product=product).aggregate(rating=Avg('rating'))
 
 
     product_image = product.product_images.all()
@@ -60,6 +62,8 @@ def product_details_view(requests, pid):
     context = {
         'product': product,
         'product_image': product_image,
+        'reviews': reviews,
+        'avg_rating': avg_rating,
         'related_products': related_products,
     }
     return render(requests, 'core/product-details.html', context)

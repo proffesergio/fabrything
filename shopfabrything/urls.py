@@ -25,8 +25,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("fabrythingapp.urls", 'core'), name='core'),
     path("user/", include("userauthapp.urls")),
+    #CkEditor
+    path("ckeditor5/", include('django_ckeditor_5.urls')),
+    # path("upload/", custom_upload_function, name="custom_upload_file"),
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

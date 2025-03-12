@@ -3,6 +3,8 @@ from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe
 from userauthapp.models import User
 from taggit.managers import TaggableManager
+from django_ckeditor_5.fields import CKEditor5Field
+
 
 # creating tuples
 STATUS_CHOICE = (
@@ -19,11 +21,11 @@ STATUS = (
 )
 
 RATING = (
-    ('1', "★☆☆☆☆"),
-    ('2', "★★☆☆☆"),
-    ('3', "★★★☆☆"),
-    ('4', "★★★★☆"),
-    ('5', "★★★★★"),
+    (1, "★☆☆☆☆"),
+    (2, "★★☆☆☆"),
+    (3, "★★★☆☆"),
+    (4, "★★★★☆"),
+    (5, "★★★★★"),
 )
 
 SIZES = (
@@ -99,7 +101,7 @@ class Product(models.Model):
     pid = ShortUUIDField(unique=True, length=10, max_length=20, prefix="prod", alphabet="0123456789abcd")
     title = models.CharField(max_length=100)
     image = models.ImageField(upload_to="products")
-    description = models.TextField(null=True, blank=True)
+    description = CKEditor5Field('Text', config_name='extended', null=True, blank=True)
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='category')
@@ -109,7 +111,7 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="1.00")
     old_price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="0.00")
 
-    specs = models.TextField(null=True, blank=True)
+    specs = CKEditor5Field(null=True, blank=True)
     type = models.CharField(max_length=100, default="100% Cotton", null=True, blank=True)
     stock_count = models.CharField(max_length=100, default="10", null=True, blank=True)
     sizes = models.CharField(choices=SIZES, max_length=10, default="L", null=True, blank=True)
@@ -183,8 +185,9 @@ class CartOrderItems(models.Model):
 # Product Review, Wishlist, Address 
 class ProductReview(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
-    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
-    review = models.TextField(default=2)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, related_name='reviews')
+    review_heading = models.TextField(blank=True, null=True, default='Thanks to Fabrything for this amazing item!')
+    review = models.TextField(default=None)
     rating = models.IntegerField(choices=RATING, default=None)
     date = models.DateTimeField(auto_now_add=True)
 
