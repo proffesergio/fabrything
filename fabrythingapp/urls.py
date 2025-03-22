@@ -1,6 +1,6 @@
 from django.urls import path, include
 from fabrythingapp import views
-from fabrythingapp.views import category_list_view, category_products, product_details_view, tag_list
+from fabrythingapp.views import category_list_view, category_products, product_details_view, tag_list, ajax_add_review, search_view
 from django.conf.urls.static import static
 from django.conf import settings
 
@@ -15,4 +15,10 @@ urlpatterns = [
 
     # Tags
     path("products/tag/<tag_slug>/", tag_list, name='tags'),
+
+    #Add Review
+    path("add-review/<pid>/", ajax_add_review, name="add-review"),
+
+    #Search
+    path("search/", search_view, name="search"),
 ] 

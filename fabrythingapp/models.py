@@ -28,6 +28,14 @@ RATING = (
     (5, "★★★★★"),
 )
 
+# RATING = (
+#     ('1', "★☆☆☆☆"),
+#     ('2', "★★☆☆☆"),
+#     ('3', "★★★☆☆"),
+#     ('4', "★★★★☆"),
+#     ('5', "★★★★★"),
+# )
+
 SIZES = (
     ('S', "Small"),
     ('M', "Medium"),
@@ -105,8 +113,8 @@ class Product(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, related_name='category')
-    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, related_name='brand')
-    Vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, related_name='brand', blank=True)
+    # Vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
 
     price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="1.00")
     old_price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="0.00")
@@ -116,7 +124,7 @@ class Product(models.Model):
     stock_count = models.CharField(max_length=100, default="10", null=True, blank=True)
     sizes = models.CharField(choices=SIZES, max_length=10, default="L", null=True, blank=True)
     # tags = models.ForeignKey(Tags, on_delete=models.SET_NULL, null=True)
-    rating = models.CharField(choices=RATING, max_length=100, default=str(4), null=True, blank=True)
+    # rating = models.CharField(choices=RATING, max_length=100, default=None, null=True, blank=True)
     product_status = models.CharField(choices=STATUS, max_length=10, default="in_review")
     status = models.BooleanField(default=True)
     in_stock = models.BooleanField(default=True)

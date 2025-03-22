@@ -4,12 +4,11 @@
 
 <main class="main">
     <nav aria-label="breadcrumb" class="breadcrumb-nav border-0 mb-0">
-        <div class="container d-flex align-items-center">
+        <div class="container-fluid d-flex align-items-center">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'fabrythingapp:index' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="index.html">Home</a></li>
                 <li class="breadcrumb-item"><a href="#">{{ product.category.title }}</a></li>
-                <li class="breadcrumb-item"><a href="#">{{ product.title }}</a></li>
-                <!-- <li class="breadcrumb-item active" aria-current="page">With Sidebar</li> -->
+                <li class="breadcrumb-item active" aria-current="page">{{ product.title }}</li>
             </ol>
 
             <nav class="product-pager ml-auto" aria-label="Product">
@@ -23,61 +22,55 @@
                     <i class="icon-angle-right"></i>
                 </a>
             </nav><!-- End .pager-nav -->
-        </div><!-- End .container -->
+        </div><!-- End .container-fluid -->
     </nav><!-- End .breadcrumb-nav -->
 
     <div class="page-content">
-        <div class="container">
+        <div class="container-fluid">
             <div class="row">
-                <div class="col-lg-9">
+                <div class="col-xl-10">
                     <div class="product-details-top">
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-6 col-lg-7">
                                 <div class="product-gallery">
                                     <figure class="product-main-image">
-                                        <span class="product-label label-top">Top</span>
+                                        <span class="product-label label-sale">Sale</span>
                                         <img id="product-zoom" src="{{ product.image.url }}" data-zoom-image="{{ product.image.url }}" alt="product image">
 
                                         <a href="#" id="btn-product-gallery" class="btn-product-gallery">
                                             <i class="icon-arrows"></i>
                                         </a>
                                     </figure><!-- End .product-main-image -->
-                                    
-                                    <div id="product-zoom-gallery" class="product-image-gallery">
-                                        <a class="product-gallery-item active" href="#" data-image="{{ product.image.url }}" data-zoom-image="assets/images/products/single/sidebar-gallery/1-big.jpg">
+
+                                    <div id="product-zoom-gallery" class="product-image-gallery max-col-6">
+                                        <a class="product-gallery-item" href="#" data-image="{{ product.image.url }}" data-zoom-image="{{ product.image.url }}">
                                             <img src="{{ product.image.url }}" alt="product side">
                                         </a>
+
                                         {% for p in product_image %}
                                         <a class="product-gallery-item" href="#" data-image="{{ p.images.url }}" data-zoom-image="assets/images/products/single/sidebar-gallery/2-big.jpg">
                                             <img src="{{ p.images.url }}" alt="product cross">
                                         </a>
                                         {% endfor %}
-<!-- 
-                                        <a class="product-gallery-item" href="#" data-image="assets/images/products/single/sidebar-gallery/3.jpg" data-zoom-image="assets/images/products/single/sidebar-gallery/3-big.jpg">
-                                            <img src="{{ product.image.url }}" alt="product with model">
-                                        </a>
 
-                                        <a class="product-gallery-item" href="#" data-image="assets/images/products/single/sidebar-gallery/4.jpg" data-zoom-image="assets/images/products/single/sidebar-gallery/4-big.jpg">
-                                            <img src="{{ product.image.url }}" alt="product back">
-                                        </a> -->
                                     </div><!-- End .product-image-gallery -->
-                                    
                                 </div><!-- End .product-gallery -->
-                            </div><!-- End .col-md-6 -->
+                            </div><!-- End .col-lg-7 -->
 
-                            <div class="col-md-6">
-                                <div class="product-details product-details-sidebar">
+                            <div class="col-md-6 col-lg-5">
+                                <div class="product-details">
                                     <h1 class="product-title">{{ product.title }}</h1><!-- End .product-title -->
 
                                     <div class="ratings-container">
                                         <div class="ratings">
                                             <div class="ratings-val" style="width: 80%;">{{ product.rating }}</div><!-- End .ratings-val -->
                                         </div><!-- End .ratings -->
-                                        <a class="ratings-text" href="#product-review-link" id="review-link">( {{ product.review.count }} Reviews )</a>
+                                        <a class="ratings-text" href="#product-accordion" id="review-link">( {{ product.review.count }} Reviews )</a>
                                     </div><!-- End .rating-container -->
 
                                     <div class="product-price">
-                                        ৳{{ product.price }}
+                                        <span class="new-price">৳{{ product.price }}</span>
+                                        <span class="old-price">Was ৳{{ product.old_price }}</span>
                                     </div><!-- End .product-price -->
 
                                     <div class="product-content">
@@ -87,9 +80,19 @@
                                     <div class="details-filter-row details-row-size">
                                         <label>Color:</label>
 
-                                        <div class="product-nav product-nav-dots">
-                                            <a href="#" class="active" style="background: #333333;"><span class="sr-only">Color name</span></a>
-                                            <a href="#" style="background: #efe7db;"><span class="sr-only">Color name</span></a>
+                                        <div class="product-nav product-nav-thumbs">
+                                            <a href="#" class="active">
+                                                <img src="assets/images/products/single/fullwidth/1-thumb.jpg" alt="product desc">
+                                            </a>
+                                            <a href="#">
+                                                <img src="assets/images/products/single/fullwidth/2-thumb.jpg" alt="product desc">
+                                            </a>
+                                            <a href="#">
+                                                <img src="assets/images/products/single/fullwidth/3-thumb.jpg" alt="product desc">
+                                            </a>
+                                            <a href="#">
+                                                <img src="assets/images/products/single/fullwidth/4-thumb.jpg" alt="product desc">
+                                            </a>
                                         </div><!-- End .product-nav -->
                                     </div><!-- End .details-filter-row -->
 
@@ -99,24 +102,23 @@
                                             <select name="size" id="size" class="form-control">
                                                 <option value="#" selected="selected">Select a size</option>
                                                 <option value="s">{{ product.sizes }}</option>
-                                                <!-- <option value="m">Medium</option>
+                                                <!-- <option value="s">Small</option>
+                                                <option value="m">Medium</option>
                                                 <option value="l">Large</option>
                                                 <option value="xl">Extra Large</option> -->
                                             </select>
                                         </div><!-- End .select-custom -->
+                                    </div><!-- End .details-filter-row -->
 
-                                        <a href="#" class="size-guide"><i class="icon-th-list"></i>size guide</a>
+                                    <div class="details-filter-row details-row-size">
+                                        <label for="qty">Available Stock: {{ product.stock_count }}</label>
+                                        <div class="product-details-quantity">
+                                            <input type="number" id="qty" class="form-control" value="1" min="1" max="10" step="1" data-decimals="0" required>
+                                        </div><!-- End .product-details-quantity -->
                                     </div><!-- End .details-filter-row -->
 
                                     <div class="product-details-action">
-                                        <div class="details-action-col">
-                                            <label for="qty">Available Stock: {{ product.stock_count }}</label>
-                                            <div class="product-details-quantity">
-                                                <input type="number" id="qty" class="form-control" value="1" min="1" max="10" step="1" data-decimals="0" required>
-                                            </div><!-- End .product-details-quantity -->
-
-                                            <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                        </div><!-- End .details-action-col -->
+                                        <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
 
                                         <div class="details-action-wrapper">
                                             <a href="#" class="btn-product btn-wishlist" title="Wishlist"><span>Add to Wishlist</span></a>
@@ -124,7 +126,7 @@
                                         </div><!-- End .details-action-wrapper -->
                                     </div><!-- End .product-details-action -->
 
-                                    <div class="product-details-footer details-footer-col">
+                                    <div class="product-details-footer">
                                         <div class="product-cat">
                                             <span>Tags:</span>
                                             {% for tag in product.tags.all %}
@@ -140,224 +142,187 @@
                                             <a href="#" class="social-icon" title="Pinterest" target="_blank"><i class="icon-pinterest"></i></a>
                                         </div>
                                     </div><!-- End .product-details-footer -->
+
+                                    <div class="accordion accordion-plus product-details-accordion" id="product-accordion">
+                                        <div class="card card-box card-sm">
+                                            <div class="card-header" id="product-desc-heading">
+                                                <h2 class="card-title">
+                                                    <a class="collapsed" role="button" data-toggle="collapse" href="#product-accordion-desc" aria-expanded="false" aria-controls="product-accordion-desc">
+                                                        Description
+                                                    </a>
+                                                </h2>
+                                            </div><!-- End .card-header -->
+                                            <div id="product-accordion-desc" class="collapse" aria-labelledby="product-desc-heading" data-parent="#product-accordion">
+                                                <div class="card-body">
+                                                    <div class="product-desc-content">
+                                                        <p>{{ product.description|safe }}</p>
+                                                        </div><!-- End .product-desc-content -->
+                                                </div><!-- End .card-body -->
+                                            </div><!-- End .collapse -->
+                                        </div><!-- End .card -->
+
+                                        <div class="card card-box card-sm">
+                                            <div class="card-header" id="product-info-heading">
+                                                <h2 class="card-title">
+                                                    <a class="collapsed" role="button" data-toggle="collapse" href="#product-accordion-info" aria-expanded="false" aria-controls="product-accordion-info">
+                                                        Additional Information
+                                                    </a>
+                                                </h2>
+                                            </div><!-- End .card-header -->
+                                            <div id="product-accordion-info" class="collapse" aria-labelledby="product-info-heading" data-parent="#product-accordion">
+                                                <div class="card-body">
+                                                    <div class="product-desc-content">
+                                                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Donec odio. Quisque volutpat mattis eros. Nullam malesuada erat ut turpis. Suspendisse urna viverra non, semper suscipit, posuere a, pede. Donec nec justo eget felis facilisis fermentum. Aliquam porttitor mauris sit amet orci. </p>
+
+                                                        <h3>Fabric & care</h3>
+                                                        <ul>
+                                                            <li>100% Polyester</li>
+                                                            <li>Do not iron</li>
+                                                            <li>Do not wash</li>
+                                                            <li>Do not bleach</li>
+                                                            <li>Do not tumble dry</li>
+                                                            <li>Professional dry clean only</li>
+                                                        </ul>
+
+                                                        <h3>Size</h3>
+                                                        <p>S, M, L, XL</p>
+                                                    </div><!-- End .product-desc-content -->
+                                                </div><!-- End .card-body -->
+                                            </div><!-- End .collapse -->
+                                        </div><!-- End .card -->
+
+                                        <div class="card card-box card-sm">
+                                            <div class="card-header" id="product-shipping-heading">
+                                                <h2 class="card-title">
+                                                    <a class="collapsed" role="button" data-toggle="collapse" href="#product-accordion-shipping" aria-expanded="false" aria-controls="product-accordion-shipping">
+                                                        Shipping & Returns
+                                                    </a>
+                                                </h2>
+                                            </div><!-- End .card-header -->
+                                            <div id="product-accordion-shipping" class="collapse" aria-labelledby="product-shipping-heading" data-parent="#product-accordion">
+                                                <div class="card-body">
+                                                    <div class="product-desc-content">
+                                                        <p>We deliver to over 100 countries around the world. For full details of the delivery options we offer, please view our <a href="#">Delivery information</a><br>
+                                                        We hope you’ll love every purchase, but if you ever need to return an item you can do so within a month of receipt. For full details of how to make a return, please view our <a href="#">Returns information</a></p>
+                                                    </div><!-- End .product-desc-content -->
+                                                </div><!-- End .card-body -->
+                                            </div><!-- End .collapse -->
+                                        </div><!-- End .card -->
+
+                                        <div class="card card-box card-sm">
+                                            <div class="card-header" id="product-review-heading">
+                                                <h2 class="card-title">
+                                                    <a role="button" data-toggle="collapse" href="#product-accordion-review" aria-expanded="true" aria-controls="product-accordion-review">
+                                                        Reviews ({{ reviews.count }})
+                                                    </a>
+                                                </h2>
+                                            </div><!-- End .card-header -->
+                                            <div id="product-accordion-review" class="collapse show" aria-labelledby="product-review-heading" data-parent="#product-accordion">
+                                                <div class="card-body">
+                                                    <div class="reviews">
+                                                        {% for review in reviews %}
+                                                        <div class="review">
+                                                            <div class="row no-gutters">
+                                                                <div class="col-auto">
+                                                                    <h4><a href="#">{{ review.user.username|title }}</a></h4>
+                                                                    
+                                                                    <div class="ratings-container">                                                                        
+                                                                        <div class="ratings">
+                                                                            <!-- {% for stars in review.rating|ljust:review.rating %} -->
+                                                                            <div class="ratings-val" style="width: 80%;"> 
+                                                                                {% for star in review.rating|ljust:review.rating %}                                                                               
+                                                                                <i class="fas fa-star"></i>   
+                                                                                {% endfor %}                                                                                
+                                                                            </div>
+                                                                            <!-- {% endfor %}                                                                            -->
+                                                                            <!-- End .ratings-val -->
+                                                                        </div><!-- End .ratings -->
+                                                                        
+                                                                    </div><!-- End .rating-container -->
+                                                                    
+                                                                    <span class="review-date">{{ review.date|date:'d M, Y' }}</span>
+                                                                </div><!-- End .col -->
+                                                                <div class="col">
+                                                                    <h4>
+                                                                        {% if review.title is not None %}
+                                                                            {{ review.review_heading }}
+                                                                        {% else %} 
+                                                                            <i class="fas fa fa-heart"></i>
+                                                                        {% endif %}
+                                                                    </h4>
+
+                                                                    <div class="review-content">
+                                                                        <p>{{ review.review }}</p>
+                                                                    </div><!-- End .review-content -->
+
+                                                                    <div class="review-action">
+                                                                        <a href="#"><i class="icon-thumbs-up"></i>Helpful (2)</a>
+                                                                        <a href="#"><i class="icon-thumbs-down"></i>Unhelpful (0)</a>
+                                                                    </div><!-- End .review-action -->
+                                                                </div><!-- End .col-auto -->
+                                                            </div><!-- End .row -->                                                            
+                                                        </div><!-- End .review -->
+                                                        {% endfor %}
+                                                    </div><!-- End .reviews -->
+                                                </div><!-- End .card-body -->
+                                            </div><!-- End .collapse -->
+                                            <!-- Add Review Start  -->
+                                             {% if make_review == True %}
+                                             {% if request.user.is_authenticated %}
+                                            <div class="col-auto">
+                                                <div class="text-center">
+                                                <h2 class="title mb-1 add-rev-hide">Add Review</h2><!-- End .title mb-2 -->
+                                                <strong class="text-success" id="reviewAdded">
+                                                    
+                                                </strong>
+                                                <p class="lead text-primary" id="feedbackAdded">
+                                                    Leave an honest feeback!
+                                                </p><!-- End .lead text-primary -->
+                                                <p class="mb-3 hide-p">We collaborate with ambitious brands and people; we’d love to build something great together.</p>
+                                                </div><!-- End .text-center -->
+                    
+                                                <form method="POST" action="{% url 'fabrythingapp:add-review' product.pid %}" class="contact-form mb-2 hide-form" id="addReviewForm">
+                                                    {% csrf_token %}
+                                                    
+                                                    <!-- <div class="form-group">
+                                                        {{ review_form.review_heading }}
+                                                    </div>
+                                                    <div class="row">
+                                                        
+                                                    </div> -->
+                                                    <div class="form-group">
+                                                        {{ review_form.review }}
+                                                    </div>
+                                                    <div class="form-group">
+                                                        Rating: {{ review_form.rating }}
+                                                    </div>
+                                                    
+                                                    <div class="text-center">
+                                                        <button type="submit" class="btn btn-outline-primary-2 btn-minwidth-sm">
+                                                            <span>SUBMIT</span>
+                                                            <i class="icon-long-arrow-right"></i>
+                                                        </button>
+                                                    </div><!-- End .text-center -->
+                                                </form><!-- End .contact-form -->
+                                            </div>
+                                            {% endif %}
+                                            {% endif %}                                            
+                                            <!-- End .col-md-9 col-lg-7 -->
+                                            <!-- Add Review End -->
+                                        </div><!-- End .card -->
+                                    </div><!-- End .accordion -->
                                 </div><!-- End .product-details -->
-                            </div><!-- End .col-md-6 -->
+                            </div><!-- End .col-lg-5 -->
                         </div><!-- End .row -->
                     </div><!-- End .product-details-top -->
+                </div><!-- End .col-xl-10 -->
 
-                    <div class="product-details-tab">
-                        <ul class="nav nav-pills justify-content-center" role="tablist">
-                            <li class="nav-item">
-                                <a class="nav-link active" id="product-desc-link" data-toggle="tab" href="#product-desc-tab" role="tab" aria-controls="product-desc-tab" aria-selected="true">Description</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="product-info-link" data-toggle="tab" href="#product-info-tab" role="tab" aria-controls="product-info-tab" aria-selected="false">Additional information</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="product-shipping-link" data-toggle="tab" href="#product-shipping-tab" role="tab" aria-controls="product-shipping-tab" aria-selected="false">Shipping & Returns</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" id="product-review-link" data-toggle="tab" href="#product-review-tab" role="tab" aria-controls="product-review-tab" aria-selected="false">Reviews ({{ reviews.count }})</a>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div class="tab-pane fade show active" id="product-desc-tab" role="tabpanel" aria-labelledby="product-desc-link">
-                                <div class="product-desc-content">
-                                    <h3>Product Information</h3>
-                                    <p>{{ product.description|safe }}</p>
-                                </div><!-- End .product-desc-content -->
-                            </div><!-- .End .tab-pane -->
-                            <div class="tab-pane fade" id="product-info-tab" role="tabpanel" aria-labelledby="product-info-link">
-                                <div class="product-desc-content">
-                                    <h3>Information</h3>
-                                    <p>We Deliver only Authentic and Premium Products </p>
-
-                                    <h3>Fabric & care</h3>
-                                    <ul>
-                                        <li>100% Comfortable fabric</li>
-                                        <li>Export Quality Branded Product</li>
-                                        <li>Snake print trim interior </li>
-                                    </ul>
-
-                                    <h3>Size</h3>
-                                    <p>S, M, L, XL, XXL</p>
-                                </div><!-- End .product-desc-content -->
-                            </div><!-- .End .tab-pane -->
-                            <div class="tab-pane fade" id="product-shipping-tab" role="tabpanel" aria-labelledby="product-shipping-link">
-                                <div class="product-desc-content">
-                                    <h3>Delivery & returns</h3>
-                                    <p>We deliver to over 100 countries around the world. For full details of the delivery options we offer, please view our <a href="#">Delivery information</a><br>
-                                    We hope you’ll love every purchase, but if you ever need to return an item you can do so within a month of receipt. For full details of how to make a return, please view our <a href="#">Returns information</a></p>
-                                </div><!-- End .product-desc-content -->
-                            </div><!-- .End .tab-pane -->
-                            <div class="tab-pane fade" id="product-review-tab" role="tabpanel" aria-labelledby="product-review-link">
-                                <div class="reviews">
-                                    {% for review in reviews %}
-                                    <!-- <h3>Reviews ({{ reviews.count }})</h3> -->
-                                    <div class="review">
-                                        <div class="row no-gutters">
-                                            <div class="col-auto">
-                                                <h4><a href="#">{{ review.user.username|title }}</a></h4>
-                                                <div class="ratings-container">
-                                                    <div class="ratings">
-                                                        <div class="ratings-val" style="width: 80%;"></div><!-- End .ratings-val -->
-                                                    </div><!-- End .ratings -->
-                                                </div><!-- End .rating-container -->
-                                                <span class="review-date">{{ review.date|date:'d M, Y' }}</span>
-                                            </div><!-- End .col -->
-                                            <div class="col">
-                                                <h4>{{ review.review_heading }}</h4>
-
-                                                <div class="review-content">
-                                                    <p>{{ review.review }}</p>
-                                                </div><!-- End .review-content -->
-
-                                                <div class="review-action">
-                                                    <a href="#"><i class="icon-thumbs-up"></i>Helpful (2)</a>
-                                                    <a href="#"><i class="icon-thumbs-down"></i>Unhelpful (0)</a>
-                                                </div><!-- End .review-action -->
-                                            </div><!-- End .col-auto -->
-                                            <div class="mb-2"></div>
-                                        </div><!-- End .row -->
-                                        
-                                    {% endfor %}
-                                    
-                                    </div><!-- End .review -->
-                                </div><!-- End .reviews -->
-                            </div><!-- .End .tab-pane -->
-                        </div><!-- End .tab-content -->
-                    </div><!-- End .product-details-tab -->
-
-                    <h2 class="title text-center mb-4">You May Also Like</h2><!-- End .title text-center -->
-                    <div class="owl-carousel owl-simple carousel-equal-height carousel-with-shadow" data-toggle="owl" 
-                        data-owl-options='{
-                            "nav": false, 
-                            "dots": true,
-                            "margin": 20,
-                            "loop": false,
-                            "responsive": {
-                                "0": {
-                                    "items":1
-                                },
-                                "480": {
-                                    "items":2
-                                },
-                                "768": {
-                                    "items":3
-                                },
-                                "992": {
-                                    "items":4
-                                },
-                                "1200": {
-                                    "items":4,
-                                    "nav": true,
-                                    "dots": false
-                                }
-                            }
-                        }'>
-                        {% for product in related_products %}
-                        <div class="product product-7 text-center">                            
-                            <figure class="product-media">
-                                <span class="product-label label-new">New</span>
-                                <a href="{% url 'fabrythingapp:product-details' product.pid %}">
-                                    <img src="{{ product.image.url }}" alt="Product image" class="product-image">
-                                </a>
-
-                                <div class="product-action-vertical">
-                                    <a href="#" class="btn-product-icon btn-wishlist btn-expandable"><span>add to wishlist</span></a>
-                                    <a href="popup/quickView.html" class="btn-product-icon btn-quickview" title="Quick view"><span>Quick view</span></a>
-                                    <a href="#" class="btn-product-icon btn-compare" title="Compare"><span>Compare</span></a>
-                                </div><!-- End .product-action-vertical -->
-
-                                <div class="product-action">
-                                    <a href="#" class="btn-product btn-cart"><span>add to cart</span></a>
-                                </div><!-- End .product-action -->
-                            </figure><!-- End .product-media -->
-
-                            <div class="product-body">
-                                <div class="product-cat">
-                                    <a href="#">{{ product.category.title }}</a>
-                                </div><!-- End .product-cat -->
-                                <h3 class="product-title"><a href="{% url 'fabrythingapp:product-details' product.pid %}">{{ product.title }}</a></h3><!-- End .product-title -->
-                                <div class="product-price">
-                                    ৳{{ product.price }}
-                                </div><!-- End .product-price -->
-                                <div class="ratings-container">
-                                    <div class="ratings">
-                                        <div class="ratings-val" style="width: 20%;"></div><!-- End .ratings-val -->
-                                    </div><!-- End .ratings -->
-                                    <span class="ratings-text">( {{ product.rating }} )</span>
-                                </div><!-- End .rating-container -->
-
-                                <div class="product-nav product-nav-dots">
-                                    <a href="#" class="active" style="background: #cc9966;"><span class="sr-only">Color name</span></a>
-                                    <a href="#" style="background: #7fc5ed;"><span class="sr-only">Color name</span></a>
-                                    <a href="#" style="background: #e8c97a;"><span class="sr-only">Color name</span></a>
-                                </div><!-- End .product-nav -->
-                            </div><!-- End .product-body -->                            
-                        </div><!-- End .product -->
-                        {% endfor %}
-                    </div><!-- End .owl-carousel -->
-                </div><!-- End .col-lg-9 -->
-
-                <aside class="col-lg-3">
-                    <div class="widget widget-banner-sidebar">
-                        <div class="banner-sidebar-title">
-                            Estimated Delivery Within 1-2 Days
-                            <span class="product-label label-sale">আপনার লোকেশন, ফোন নাম্বার নিশ্চিত করুন</span>
-                        </div><!-- End .ad-title -->        
-                        <div class="mb-4"></div>                
-                                               
-                        <div class="container">
-                            <div class="row">
-                                <div class="col-sm-7">
-                                    <div class="contact-info">
-                                        
-                                        <h3></h3>
-
-                                        <ul class="contact-list">
-                                            {% if request.user.is_authenticated %}                                            
-                                            <li>
-                                                <i class="icon-map-marker"></i>                                                
-                                                 {{ user.user_address }}
-                                            </li>
-                                            <li>
-                                                <i class="icon-phone"></i>
-                                                <a href="tel:#">{{ user.phone }}</a>
-                                            </li>
-                                            <li>
-                                                <i class="icon-envelope"></i>
-                                                <a href="mailto:#">{{ user.email }}</a>
-                                            </li>
-                                            {% else %}
-                                            <li>
-                                                <i class="icon-map-marker"></i>                                                
-                                                 <a href="{% url 'userauthapp:sign-up' %}">Signup to add your address</a> 
-                                            </li>
-                                            <li>
-                                                <i class="icon-phone"></i>
-                                                <a href="{% url 'userauthapp:sign-up' %}">Signup to add your phone</a>
-                                            </li>
-                                            <li>
-                                                <i class="icon-envelope"></i>
-                                                <a href="{% url 'userauthapp:sign-up' %}">Signup to add your email</a>
-                                            </li>
-                                            {% endif %}
-
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End .banner-ad -->
-
-                    </div><!-- End .widget -->
+                <aside class="col-xl-2 d-md-none d-xl-block">
                     <div class="sidebar sidebar-product">
                         <div class="widget widget-products">
                             <h4 class="widget-title">Related Product</h4><!-- End .widget-title -->
-
+                            {% for product in related_products %}
                             <div class="products">
-                                {% for product in related_products %}
                                 <div class="product product-sm">
                                     <figure class="product-media">
                                         <a href="{% url 'fabrythingapp:product-details' product.pid %}">
@@ -366,27 +331,83 @@
                                     </figure>
 
                                     <div class="product-body">
-                                        <h5 class="product-title"><a href="{% url 'fabrythingapp:product-details' product.pid %}">{{ product.title }}</a></h5><!-- End .product-title -->
+                                        <h5 class="product-title"><a href="product.html"><a href="#">{{ product.title }}</a> <br><a href="#">{{ product.category.title }}</a></a></h5><!-- End .product-title -->
                                         <div class="product-price">
                                             <span class="new-price">৳{{ product.price }}</span>
                                             <span class="old-price">Was ৳{{ product.old_price }}</span>
                                         </div><!-- End .product-price -->
                                     </div><!-- End .product-body -->
                                 </div><!-- End .product product-sm -->
-                                {% endfor %}
                             </div><!-- End .products -->
-                            <div class="mb-2"></div>
+                            {% endfor %}
 
                             <a href="{% url 'fabrythingapp:category-products' product.category.cid %}" class="btn btn-outline-dark-3"><span>View More Products</span><i class="icon-long-arrow-right"></i></a>
                         </div><!-- End .widget widget-products -->
-
-                        
+                        <div class="widget widget-banner-sidebar">
+                            <div class="banner-sidebar-title">
+                                Estimated Delivery Within 1-2 Days
+                                <span class="product-label label-sale">আপনার লোকেশন, ফোন নাম্বার নিশ্চিত করুন</span>
+                            </div><!-- End .ad-title -->        
+                            <div class="mb-4"></div>                
+                                                   
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-sm-7">
+                                        <div class="contact-info">
+                                            
+                                            <h3></h3>
+    
+                                            <ul class="contact-list">
+                                                {% if request.user.is_authenticated %}                                            
+                                                <li>
+                                                    <i class="icon-map-marker"></i>                                                
+                                                     {{ user.user_address }}
+                                                </li>
+                                                <li>
+                                                    <i class="icon-phone"></i>
+                                                    <a href="tel:#">{{ user.phone }}</a>
+                                                </li>
+                                                <li>
+                                                    <i class="icon-envelope"></i>
+                                                    <a href="mailto:#">{{ user.email }}</a>
+                                                </li>
+                                                {% else %}
+                                                <li>
+                                                    <i class="icon-map-marker"></i>                                                
+                                                     <a href="{% url 'userauthapp:sign-up' %}">Signup to add your address</a> 
+                                                </li>
+                                                <li>
+                                                    <i class="icon-phone"></i>
+                                                    <a href="{% url 'userauthapp:sign-up' %}">Signup to add your phone</a>
+                                                </li>
+                                                <li>
+                                                    <i class="icon-envelope"></i>
+                                                    <a href="{% url 'userauthapp:sign-up' %}">Signup to add your email</a>
+                                                </li>
+                                                {% endif %}
+    
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End .banner-ad -->
+    
+                        </div><!-- End .widget -->
+                        <div class="widget widget-banner-sidebar">
+                            <div class="banner-sidebar-title">ad box 280 x 280</div><!-- End .ad-title -->
+                            
+                            <div class="banner-sidebar banner-overlay">
+                                <a href="#">
+                                    <img src="assets/images/blog/sidebar/banner.jpg" alt="banner">
+                                </a>
+                            </div><!-- End .banner-ad -->
+                        </div><!-- End .widget -->
                     </div><!-- End .sidebar sidebar-product -->
-                </aside><!-- End .col-lg-3 -->
+                </aside><!-- End .col-xl-2 -->
             </div><!-- End .row -->
 
-        </div><!-- End .container -->
+        </div><!-- End .container-fluid -->
     </div><!-- End .page-content -->
 </main><!-- End .main -->
-
 {% endblock %}
