@@ -4,11 +4,12 @@ from django.db.models import Count, Avg
 from taggit.models import Tag
 from fabrythingapp.forms import ProductReviewForm
 from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
 
 
 
 # Create your views here.
-def index(requests):
+def index(request):
     # products = Product.objects.all()
     products = Product.objects.filter(featured=True, product_status='published', )
 
@@ -21,10 +22,9 @@ def index(requests):
         'categories': categories,
         'brands': brands,
     }
-    return render(requests, 'core/home.html', context)
+    return render(request, 'core/home.html', context)
 
-def category_list_view(requests):
-
+def category_list_view(request):
     # categories = Category.objects.all().annotate(product_count=Count('products'))
     categories = Category.objects.all()
     products = Product.objects.all()
@@ -33,17 +33,28 @@ def category_list_view(requests):
         'categories':categories,
         'products':products,
     }
-    return render(requests, 'core/category-list.html', context)
+    return render(request, 'core/category-list.html', context)
 
-def get_brands(requests):
+def product_list_view(request):
+    # categories = Category.objects.all().annotate(product_count=Count('products'))
+    categories = Category.objects.all()
+    products = Product.objects.all()
+
+    context = {
+        'categories':categories,
+        'products':products,
+    }
+    return render(request, 'core/product-list.html', context)
+
+def get_brands(request):
     brands = Brand.objects.all()
     
     context = {
         'brands':brands,
     }
-    return render(requests, 'core/home.html', context)
+    return render(request, 'core/home.html', context)
 
-def category_products(requests, cid):
+def category_products(request, cid):
     category = Category.objects.get(cid=cid)
     products = Product.objects.filter(product_status='published', category=category)
 
@@ -51,9 +62,9 @@ def category_products(requests, cid):
         'category':category,
         'products':products,
     }
-    return render(requests, 'core/category-products.html', context)
+    return render(request, 'core/category-products.html', context)
 
-def product_details_view(requests, pid):
+def product_details_view(request, pid):
     product = Product.objects.get(pid=pid)
     related_products = Product.objects.filter(category=product.category).exclude(pid=pid)
     reviews = ProductReview.objects.filter(product=product)
@@ -67,8 +78,8 @@ def product_details_view(requests, pid):
 
     make_review = True 
 
-    if requests.user.is_authenticated:
-        user_review_count = ProductReview.objects.filter(user=requests.user, product=product).count()
+    if request.user.is_authenticated:
+        user_review_count = ProductReview.objects.filter(user=request.user, product=product).count()
 
         if user_review_count > 0:
             make_review = False
@@ -82,7 +93,7 @@ def product_details_view(requests, pid):
         'make_review': make_review,
         'related_products': related_products,
     }
-    return render(requests, 'core/product-details.html', context)
+    return render(request, 'core/product-details.html', context)
 
 def tag_list(request, tag_slug=None):
 
@@ -134,5 +145,21 @@ def search_view(request):
         "products": products,
         "query": query,
     }
-
     return render(request, 'core/search.html', context)
+
+# Filter Products 
+def filter_products(request):
+    categories = request.GET.getlist('category[]')
+
+    products = Product.objects.filter(product_status="published").order_by("-id").distinct()
+    # Category length must be > 0
+    if len(categories) > 0:
+        products = products.filter(category__id__in=categories).distinct() # chaining in python -> product__title__name
+
+
+
+    data = render_to_string("core/async/product-list.html", {"products":products})
+
+    return JsonResponse({"data": data})
+
+
