@@ -208,6 +208,8 @@ class ProductReview(models.Model):
     def get_rating(self):
         return self.rating
     
+# ... existing code ...
+
 class Wishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
@@ -219,9 +221,15 @@ class Wishlist(models.Model):
     def __str__(self):
         return self.product.title
     
-    def get_rating(self):
-        return self.rating
-    
+    def get_product_rating(self):
+        """Get average rating of the product in this wishlist"""
+        reviews = self.product.reviews.all()
+        if reviews.exists():
+            avg_rating = sum([r.rating for r in reviews]) / reviews.count()
+            return round(avg_rating, 1)
+        return 0
+
+# ... existing code ...    
 class Address(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     address = models.CharField(max_length=100, null=True)
