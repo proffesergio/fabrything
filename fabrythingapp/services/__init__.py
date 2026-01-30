@@ -23,6 +23,8 @@ from .analytics_service import AnalyticsService
 from .recommendation_service import RecommendationService
 from .caching_service import CachingService
 from .user_preference_service import UserPreferenceService
+from .review_service import ReviewService
+from .cart_service import CartService
 
 __all__ = [
     'ProductService',
@@ -30,4 +32,6 @@ __all__ = [
     'RecommendationService',
     'CachingService',
     'UserPreferenceService',
+    'ReviewService',
+    'CartService',
 ]

@@ -1,0 +1,2455 @@
+{
+  "metadata": {
+    "document_title": "E-Commerce Platform Architecture & Feature Analysis",
+    "version": "1.0",
+    "date": "2026-01-30",
+    "based_on": ["Amazon", "AliExpress", "Shopify"],
+    "target_platform": "Fabrything Django E-Commerce",
+    "document_type": "Production-Ready Implementation Roadmap"
+  },
+
+  "executive_summary": {
+    "total_features": 67,
+    "phases": 4,
+    "estimated_total_hours": 2400,
+    "estimated_months": "8-10 months",
+    "team_size_recommended": "4-6 developers",
+    "key_principles": [
+      "Mobile-first design",
+      "Security by default",
+      "Performance optimization",
+      "User trust and transparency",
+      "Scalability for growth"
+    ]
+  },
+
+  "implementation_phases": {
+    "phase_1": {
+      "name": "Foundation & MVP (Months 1-2)",
+      "duration_weeks": 8,
+      "focus": "Core shopping functionality",
+      "features": [
+        "shopping_cart_basic",
+        "checkout_cod",
+        "order_placement",
+        "user_authentication",
+        "mobile_basic_responsiveness"
+      ],
+      "estimated_hours": 400,
+      "success_criteria": [
+        "Users can complete purchase flow",
+        "Mobile checkout functional",
+        "COD payments working",
+        "Order confirmation emails sent"
+      ]
+    },
+    "phase_2": {
+      "name": "User Experience & Trust (Months 2-4)",
+      "duration_weeks": 8,
+      "focus": "Building trust and enhancing UX",
+      "features": [
+        "order_tracking",
+        "review_rating_system",
+        "wishlist_saved_items",
+        "user_account_management",
+        "advanced_search_filters",
+        "ssl_https_security",
+        "otp_verification"
+      ],
+      "estimated_hours": 600,
+      "success_criteria": [
+        "Users build trust through reviews",
+        "Advanced filtering works",
+        "OTP verification secure",
+        "Order status updates real-time"
+      ]
+    },
+    "phase_3": {
+      "name": "Advanced Features & Admin (Months 4-7)",
+      "duration_weeks": 12,
+      "focus": "Admin tools and advanced features",
+      "features": [
+        "product_comparison",
+        "quick_view_modal",
+        "order_management_full",
+        "shipping_integration",
+        "inventory_management",
+        "order_dashboard",
+        "analytics_reporting",
+        "browse_history_recommendations"
+      ],
+      "estimated_hours": 800,
+      "success_criteria": [
+        "Admin can manage orders efficiently",
+        "Shipping partners integrated",
+        "Analytics provide insights",
+        "Recommendations boost sales"
+      ]
+    },
+    "phase_4": {
+      "name": "Intelligence & Support (Months 7-10)",
+      "duration_weeks": 12,
+      "focus": "Chatbot, support, and optimization",
+      "features": [
+        "chatbot_faq",
+        "live_chat_integration",
+        "multi_language_support",
+        "pwa_considerations",
+        "payment_methods_expansion",
+        "customer_support_channels",
+        "address_validation",
+        "email_notifications_advanced"
+      ],
+      "estimated_hours": 600,
+      "success_criteria": [
+        "24/7 support via chatbot",
+        "Users adopt PWA",
+        "Multi-language working",
+        "Payment methods diverse"
+      ]
+    }
+  },
+
+  "feature_categories": {
+
+    "shopping_cart": {
+      "features": [
+        {
+          "id": "shopping_cart_basic",
+          "name": "Basic Shopping Cart",
+          "description": "Add/remove items, update quantities, view total price",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["product_details"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "Redis for session", "REST API"],
+          "requirements": [
+            "Session-based cart storage (anonymous users)",
+            "Database storage (logged-in users)",
+            "Real-time price updates",
+            "Stock validation",
+            "Quantity limits"
+          ],
+          "best_practices": [
+            "Cache cart data for performance",
+            "Preserve cart across sessions",
+            "Show inventory status",
+            "Enable bulk operations (select all, add multiple)"
+          ],
+          "implementation_notes": "Use Django sessions + PostgreSQL for persistence. Redis for caching.",
+          "success_metrics": [
+            "Cart abandonment rate < 30%",
+            "Load time < 200ms",
+            "98% uptime"
+          ]
+        },
+        {
+          "id": "shopping_cart_advanced",
+          "name": "Advanced Cart Features",
+          "description": "Save for later, recommendations, comparison from cart, bulk checkout",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["shopping_cart_basic", "product_recommendations"],
+          "phase": 2,
+          "technology_stack": ["Django models", "Celery for async", "Redis"],
+          "requirements": [
+            "Save items to wishlist",
+            "Compare products directly",
+            "Recommended items display",
+            "Frequently bought together",
+            "Bulk quantity pricing"
+          ],
+          "best_practices": [
+            "Show savings on bulk purchases",
+            "Display complementary products",
+            "Enable quick add/remove",
+            "Show estimated delivery"
+          ],
+          "implementation_notes": "Leverage product relationships and purchase history data.",
+          "success_metrics": [
+            "30% of carts use 'save for later'",
+            "AOV increase 15-20%"
+          ]
+        },
+        {
+          "id": "shopping_cart_mobile",
+          "name": "Mobile-Optimized Cart",
+          "description": "Touch-friendly cart interface with swipe gestures",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["shopping_cart_basic", "mobile_responsiveness"],
+          "phase": 2,
+          "technology_stack": ["Bootstrap/Tailwind", "Touch event handlers", "CSS Grid"],
+          "requirements": [
+            "Larger buttons for touch",
+            "Swipe to remove items",
+            "One-hand checkout possible",
+            "Vertical orientation optimized",
+            "Bottom action bar"
+          ],
+          "best_practices": [
+            "Thumb-friendly layout",
+            "Clear quantity controls",
+            "Easy edit options",
+            "Prominent 'Checkout' button"
+          ],
+          "implementation_notes": "Use CSS Media Queries and JavaScript touch events.",
+          "success_metrics": [
+            "Mobile checkout completion 70%+",
+            "Bounce rate < 15%"
+          ]
+        }
+      ]
+    },
+
+    "checkout_process": {
+      "features": [
+        {
+          "id": "checkout_cod",
+          "name": "COD Checkout Flow",
+          "description": "Cash on Delivery payment option - core payment method",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["shopping_cart_basic", "user_authentication"],
+          "phase": 1,
+          "technology_stack": ["Django Forms", "Django ORM", "REST API"],
+          "requirements": [
+            "Multi-step checkout form",
+            "Delivery address input",
+            "Order summary review",
+            "COD confirmation",
+            "Order creation",
+            "Confirmation email"
+          ],
+          "best_practices": [
+            "Progressive disclosure (one step at a time)",
+            "Clear progress indicator",
+            "Edit options at each step",
+            "Save address option",
+            "Keyboard shortcuts for power users",
+            "Auto-fill with saved addresses"
+          ],
+          "implementation_notes": "Implement form validation, address verification, inventory locking.",
+          "success_metrics": [
+            "Checkout completion > 85%",
+            "Form error rate < 5%",
+            "Time to checkout < 3 minutes"
+          ]
+        },
+        {
+          "id": "checkout_validation",
+          "name": "Checkout Validation & Error Handling",
+          "description": "Real-time form validation, error messages, fallback flows",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["checkout_cod"],
+          "phase": 1,
+          "technology_stack": ["Django validators", "JavaScript validation", "AJAX"],
+          "requirements": [
+            "Email validation",
+            "Phone number validation",
+            "Address format validation",
+            "Postal code validation",
+            "Real-time error messages",
+            "Inline error display",
+            "Helpful error suggestions"
+          ],
+          "best_practices": [
+            "Validate on blur, not on keystroke",
+            "Show errors inline",
+            "Provide format examples",
+            "Enable auto-format (phone, postal code)",
+            "Clear error messages"
+          ],
+          "implementation_notes": "Use Django forms, DRF serializers, and frontend validation.",
+          "success_metrics": [
+            "Validation accuracy > 99%",
+            "False positives < 2%"
+          ]
+        },
+        {
+          "id": "checkout_security",
+          "name": "Checkout Security Measures",
+          "description": "CSRF protection, SSL/TLS, PCI compliance readiness",
+          "importance": "CRITICAL",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 40,
+          "dependencies": ["checkout_cod", "ssl_https"],
+          "phase": 2,
+          "technology_stack": ["Django security", "SSL/TLS", "OWASP", "PCI DSS"],
+          "requirements": [
+            "CSRF token on all forms",
+            "SSL/TLS encryption",
+            "Secure session management",
+            "Input sanitization",
+            "Rate limiting",
+            "Fraud detection",
+            "PCI compliance framework"
+          ],
+          "best_practices": [
+            "Never store full card data",
+            "Use payment tokenization",
+            "Implement 3D Secure ready",
+            "Monitor suspicious patterns",
+            "Regular security audits",
+            "Penetration testing"
+          ],
+          "implementation_notes": "Follow OWASP top 10, implement CSP headers, SameSite cookies.",
+          "security_standards": ["PCI DSS Level 3", "OWASP Top 10", "ISO 27001 ready"],
+          "success_metrics": [
+            "Zero security breaches",
+            "Compliance score > 95%"
+          ]
+        },
+        {
+          "id": "checkout_optimization",
+          "name": "Checkout Optimization & A/B Testing",
+          "description": "Reduce friction, A/B test flows, optimize conversion",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 30,
+          "dependencies": ["checkout_cod", "analytics"],
+          "phase": 3,
+          "technology_stack": ["Google Optimize", "Analytics API", "Feature flags"],
+          "requirements": [
+            "A/B test different layouts",
+            "Test field ordering",
+            "Guest checkout option",
+            "Save card option",
+            "Trust badges display",
+            "Progress tracking",
+            "Exit intent popups"
+          ],
+          "best_practices": [
+            "Minimize required fields",
+            "Offer guest checkout",
+            "Show trust signals",
+            "Display security badges",
+            "Show estimated delivery time",
+            "Offer flexible payment options"
+          ],
+          "implementation_notes": "Use feature flags for gradual rollout.",
+          "success_metrics": [
+            "Conversion rate increase 10-20%",
+            "Cart abandonment decrease 5-10%"
+          ]
+        }
+      ]
+    },
+
+    "order_placement": {
+      "features": [
+        {
+          "id": "order_creation",
+          "name": "Order Creation & Storage",
+          "description": "Create orders, lock inventory, generate order IDs",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["shopping_cart_basic", "checkout_cod"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "PostgreSQL", "Transactions", "Celery"],
+          "requirements": [
+            "Atomic order creation",
+            "Inventory locking",
+            "Order ID generation (unique, formatted)",
+            "Customer association",
+            "Order status initialization",
+            "Timestamp tracking",
+            "Metadata storage"
+          ],
+          "best_practices": [
+            "Use database transactions",
+            "Implement idempotency",
+            "Store all order data",
+            "Enable order duplication detection",
+            "Audit trail logging",
+            "Event sourcing for order changes"
+          ],
+          "implementation_notes": "Use Django's transaction.atomic() decorator.",
+          "database_schema": {
+            "Order": {
+              "id": "UUID",
+              "order_number": "unique string",
+              "customer": "FK to User",
+              "items": "reverse FK to OrderItem",
+              "status": "enum",
+              "created_at": "timestamp",
+              "updated_at": "timestamp",
+              "metadata": "JSON"
+            }
+          },
+          "success_metrics": [
+            "Order creation < 500ms",
+            "Zero duplicate orders",
+            "99.99% uptime"
+          ]
+        },
+        {
+          "id": "order_confirmation",
+          "name": "Order Confirmation & Notifications",
+          "description": "Send confirmation emails, SMS, update user dashboard",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["order_creation"],
+          "phase": 1,
+          "technology_stack": ["Django signals", "Celery", "Email backend", "SMS API"],
+          "requirements": [
+            "Email confirmation template",
+            "SMS notification (optional)",
+            "Push notification (app users)",
+            "Order details in confirmation",
+            "Download invoice option",
+            "Contact support link",
+            "Track order link"
+          ],
+          "best_practices": [
+            "Send immediately after order",
+            "Use transactional email service",
+            "Personalize with customer name",
+            "Include all order details",
+            "Provide clear support contact",
+            "Make tracking link prominent",
+            "Use responsive email template"
+          ],
+          "implementation_notes": "Use Celery async tasks, Mailgun/SendGrid for emails.",
+          "success_metrics": [
+            "Email delivery > 99%",
+            "Open rate > 50%",
+            "Click-through > 20%"
+          ]
+        },
+        {
+          "id": "order_receipt",
+          "name": "Order Receipt & Invoice Generation",
+          "description": "Generate PDF receipts, invoices for download/print",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["order_creation"],
+          "phase": 1,
+          "technology_stack": ["ReportLab", "WeasyPrint", "Celery"],
+          "requirements": [
+            "PDF generation",
+            "Invoice numbering",
+            "Tax calculation display",
+            "Company details",
+            "Itemized list",
+            "Download option",
+            "Email PDF attachment",
+            "Archival storage"
+          ],
+          "best_practices": [
+            "Generate async with Celery",
+            "Cache generated PDFs",
+            "Include all legal requirements",
+            "Professional formatting",
+            "High-resolution for printing",
+            "Include order number prominently"
+          ],
+          "implementation_notes": "Use WeasyPrint for HTML-to-PDF conversion.",
+          "success_metrics": [
+            "PDF generation < 5 seconds",
+            "Zero generation errors",
+            "100% downloadable"
+          ]
+        }
+      ]
+    },
+
+    "order_management": {
+      "features": [
+        {
+          "id": "order_status_tracking",
+          "name": "Real-Time Order Status Tracking",
+          "description": "Track order from confirmation through delivery",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["order_creation", "shipping_integration"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "WebSockets/Server-Sent Events", "Redis pub/sub"],
+          "requirements": [
+            "Order status states (pending, confirmed, shipped, delivered)",
+            "Real-time updates",
+            "Status timeline display",
+            "Estimated delivery date",
+            "Location tracking (if available)",
+            "Shipping partner tracking",
+            "Delay notifications",
+            "Delivery proof"
+          ],
+          "status_flow": {
+            "pending": "Order placed, awaiting confirmation",
+            "confirmed": "Payment verified, ready for fulfillment",
+            "processing": "Items being picked and packed",
+            "shipped": "Order dispatched with tracking",
+            "in_transit": "With shipping partner",
+            "out_for_delivery": "Delivery in progress",
+            "delivered": "Successfully delivered",
+            "cancelled": "Order cancelled",
+            "returned": "Return in progress"
+          },
+          "best_practices": [
+            "Push notifications for status changes",
+            "SMS for key milestones",
+            "Email updates",
+            "Visual timeline on dashboard",
+            "Proactive communication on delays",
+            "Enable order modification early"
+          ],
+          "implementation_notes": "Use Django signals for status changes, WebSockets for real-time.",
+          "success_metrics": [
+            "Status updates < 1 second",
+            "Customer satisfaction > 85%",
+            "Support ticket reduction 30%"
+          ]
+        },
+        {
+          "id": "order_cancellation",
+          "name": "Order Cancellation & Refunds",
+          "description": "Allow order cancellation before dispatch, process refunds",
+          "importance": "HIGH",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 40,
+          "dependencies": ["order_creation", "order_status_tracking"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Payment gateway API", "Celery"],
+          "requirements": [
+            "Cancellation window (24-48 hours)",
+            "Automatic inventory restoration",
+            "Refund processing",
+            "Refund status tracking",
+            "Cancellation confirmation email",
+            "Reason logging",
+            "Admin approval (optional)",
+            "Partial cancellation"
+          ],
+          "cancellation_rules": {
+            "eligible_statuses": ["pending", "confirmed"],
+            "time_window_hours": 48,
+            "refund_timeline_days": 3,
+            "automatic_inventory_restore": true
+          },
+          "best_practices": [
+            "Allow user-initiated cancellation",
+            "Immediate inventory restoration",
+            "Fast refund processing",
+            "Clear communication",
+            "Option to exchange for credit",
+            "Request feedback on cancellation"
+          ],
+          "implementation_notes": "Implement finite state machine for order status.",
+          "success_metrics": [
+            "Cancellation completion < 100ms",
+            "Refund processing < 24 hours",
+            "Customer satisfaction > 90%"
+          ]
+        },
+        {
+          "id": "order_returns",
+          "name": "Returns & RMA Management",
+          "description": "Process returns, generate RMA numbers, track return shipments",
+          "importance": "HIGH",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 48,
+          "dependencies": ["order_status_tracking"],
+          "phase": 3,
+          "technology_stack": ["Django ORM", "Shipping API", "Analytics"],
+          "requirements": [
+            "Return eligibility window",
+            "RMA number generation",
+            "Return reason categorization",
+            "Return label printing",
+            "Return tracking",
+            "Inspection workflow",
+            "Refund upon receipt",
+            "Partial return handling",
+            "Damaged/defective handling"
+          ],
+          "return_process": {
+            "step_1": "User initiates return",
+            "step_2": "Generate RMA and return label",
+            "step_3": "User ships item back",
+            "step_4": "Admin receives and inspects",
+            "step_5": "Process refund",
+            "step_6": "Notification to customer"
+          },
+          "best_practices": [
+            "Generous return window (30 days)",
+            "Free return shipping (high value)",
+            "Clear return instructions",
+            "Photo documentation",
+            "Quick refund processing",
+            "Post-return feedback request",
+            "Analytics on return reasons"
+          ],
+          "implementation_notes": "Integrate with shipping providers for return labels.",
+          "success_metrics": [
+            "Return rate < 5% (good for apparel)",
+            "Refund processing < 7 days",
+            "Customer satisfaction > 80%"
+          ]
+        },
+        {
+          "id": "order_history",
+          "name": "Order History & Dashboard",
+          "description": "Display past orders, reorder, export history",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["user_authentication", "order_creation"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "REST API", "Pagination"],
+          "requirements": [
+            "List all past orders",
+            "Sort and filter options",
+            "Order details view",
+            "Reorder button",
+            "Export order history (CSV/PDF)",
+            "Search functionality",
+            "Pagination",
+            "Mobile responsive"
+          ],
+          "best_practices": [
+            "Show recent orders first",
+            "Quick reorder button",
+            "One-click repeat purchase",
+            "Export options",
+            "Print receipt option",
+            "Contact seller option",
+            "Track multiple orders simultaneously"
+          ],
+          "implementation_notes": "Use Django pagination, REST API for mobile.",
+          "success_metrics": [
+            "Load time < 300ms",
+            "Reorder rate > 30%",
+            "Search accuracy > 95%"
+          ]
+        }
+      ]
+    },
+
+    "payment_methods": {
+      "features": [
+        {
+          "id": "cod_payment",
+          "name": "Cash on Delivery (COD) - Current",
+          "description": "Primary payment method - no pre-payment required",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 8,
+          "dependencies": ["checkout_cod", "order_creation"],
+          "phase": 1,
+          "technology_stack": ["Django models", "No external API"],
+          "requirements": [
+            "No payment processing",
+            "Order confirmation without payment",
+            "Flag for COD in order",
+            "Delivery partner collects payment",
+            "Payment verification on delivery"
+          ],
+          "best_practices": [
+            "Build trust with COD-heavy regions",
+            "Incentivize prepayment (small discount)",
+            "Clear communication on COD",
+            "Delivery partner integration",
+            "Payment confirmation flow"
+          ],
+          "implementation_notes": "Simple database flag. Focus on delivery partner integration.",
+          "success_metrics": [
+            "99% COD conversion",
+            "Zero payment issues with delivery partners"
+          ]
+        },
+        {
+          "id": "payment_upi",
+          "name": "UPI Payment (Future Phase)",
+          "description": "Unified Payments Interface - India specific",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["payment_gateway", "checkout_security"],
+          "phase": 4,
+          "technology_stack": ["Payment gateway (Razorpay/PayU)", "REST API", "Webhooks"],
+          "requirements": [
+            "UPI ID entry",
+            "Payment gateway integration",
+            "QR code generation",
+            "Transaction confirmation",
+            "Refund handling",
+            "Webhook for payment updates"
+          ],
+          "best_practices": [
+            "One-tap payment",
+            "QR code option",
+            "App redirection",
+            "Timeout handling",
+            "Error recovery"
+          ],
+          "implementation_notes": "Use Razorpay or PayU for UPI.",
+          "success_metrics": [
+            "UPI adoption 20-30% of transactions",
+            "Payment success > 95%"
+          ]
+        },
+        {
+          "id": "payment_creditcard",
+          "name": "Credit/Debit Card Payments (Future Phase)",
+          "description": "Card payments with tokenization",
+          "importance": "HIGH",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 48,
+          "dependencies": ["payment_gateway", "checkout_security", "pci_compliance"],
+          "phase": 4,
+          "technology_stack": ["Razorpay", "Stripe", "3D Secure", "Tokenization"],
+          "requirements": [
+            "Card details never stored locally",
+            "Tokenization for future payments",
+            "3D Secure authentication",
+            "CVV verification",
+            "Expiry date validation",
+            "Saved cards option",
+            "One-click checkout"
+          ],
+          "best_practices": [
+            "Use payment gateway for PCI compliance",
+            "Never store card numbers",
+            "Implement 3D Secure",
+            "Saved card security",
+            "Clear security badges",
+            "Trust indicator display"
+          ],
+          "implementation_notes": "Partner with Razorpay or Stripe.",
+          "success_metrics": [
+            "Card payment adoption 30-40%",
+            "Fraud rate < 0.1%"
+          ]
+        },
+        {
+          "id": "payment_wallet",
+          "name": "Digital Wallet Integration (Future Phase)",
+          "description": "PayPal, Apple Pay, Google Pay",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 36,
+          "dependencies": ["payment_gateway"],
+          "phase": 4,
+          "technology_stack": ["Razorpay", "Third-party APIs"],
+          "requirements": [
+            "Single-click wallet payment",
+            "Apple Pay support",
+            "Google Pay support",
+            "Wallet balance display",
+            "Transaction history"
+          ],
+          "best_practices": [
+            "Fastest checkout experience",
+            "Works great on mobile",
+            "Tokenized for security",
+            "Consistent across devices"
+          ],
+          "implementation_notes": "Leverage payment gateway integrations.",
+          "success_metrics": [
+            "Adoption 15-20%",
+            "Fastest checkout time"
+          ]
+        },
+        {
+          "id": "payment_gateway",
+          "name": "Payment Gateway Infrastructure",
+          "description": "Core payment processing infrastructure",
+          "importance": "CRITICAL",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 56,
+          "dependencies": ["checkout_security"],
+          "phase": 3,
+          "technology_stack": ["Razorpay/PayU", "Webhooks", "Django REST", "PostgreSQL"],
+          "requirements": [
+            "Payment gateway SDK integration",
+            "Webhook handling for async payments",
+            "Transaction logging",
+            "Error handling and retries",
+            "Settlement tracking",
+            "Reconciliation",
+            "PCI compliance"
+          ],
+          "best_practices": [
+            "Choose multi-gateway for redundancy",
+            "Implement automatic retries",
+            "Clear error messages",
+            "Transaction logging for audit",
+            "Regular reconciliation",
+            "Fraud detection integration"
+          ],
+          "implementation_notes": "Recommend Razorpay for India market.",
+          "success_metrics": [
+            "99.9% payment processing uptime",
+            "Transaction success > 98%",
+            "Settlement within 24 hours"
+          ]
+        }
+      ]
+    },
+
+    "shipping_integration": {
+      "features": [
+        {
+          "id": "shipping_carrier_integration",
+          "name": "Shipping Carrier Integration",
+          "description": "Integrate with major shipping providers (Delhivery, Bluedart, Ecom Express)",
+          "importance": "CRITICAL",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 64,
+          "dependencies": ["order_creation"],
+          "phase": 2,
+          "technology_stack": ["REST API", "Webhooks", "Data sync", "Celery"],
+          "requirements": [
+            "API integration with carriers",
+            "Shipment creation",
+            "Tracking number generation",
+            "Pickup scheduling",
+            "Manifest generation",
+            "Webhook for delivery updates",
+            "Label printing",
+            "Rate calculation"
+          ],
+          "supported_carriers": [
+            "Delhivery",
+            "Bluedart",
+            "Ecom Express",
+            "DTDC",
+            "Fedex",
+            "India Post"
+          ],
+          "best_practices": [
+            "Multi-carrier support",
+            "Automatic carrier selection based on pincode",
+            "Real-time rate comparison",
+            "Batch shipment creation",
+            "Tracking synchronization",
+            "Error handling and retries"
+          ],
+          "implementation_notes": "Build abstraction layer for different APIs.",
+          "success_metrics": [
+            "99.5% shipment creation success",
+            "Average delivery time on target",
+            "Zero lost shipments"
+          ]
+        },
+        {
+          "id": "shipping_tracking",
+          "name": "Real-Time Shipping Tracking",
+          "description": "Display shipping location and ETA",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["shipping_carrier_integration"],
+          "phase": 2,
+          "technology_stack": ["Carrier APIs", "WebSockets", "Maps API"],
+          "requirements": [
+            "Live tracking updates",
+            "ETA calculation",
+            "Last-mile tracking",
+            "Delay notifications",
+            "Geolocation display",
+            "Delivery attempts log",
+            "Driver contact info"
+          ],
+          "best_practices": [
+            "Update tracking every 30 minutes",
+            "Push notifications for status changes",
+            "Estimated delivery display",
+            "Contact delivery partner option",
+            "Reschedule delivery",
+            "Geolocation map view"
+          ],
+          "implementation_notes": "Poll carrier APIs every 30 minutes with Celery.",
+          "success_metrics": [
+            "Tracking update lag < 1 hour",
+            "Accuracy > 95%",
+            "99.9% uptime"
+          ]
+        },
+        {
+          "id": "shipping_estimates",
+          "name": "Shipping Time & Cost Estimates",
+          "description": "Calculate and display delivery estimates at checkout",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["shipping_carrier_integration", "checkout_cod"],
+          "phase": 1,
+          "technology_stack": ["Carrier APIs", "Pincode database", "Caching"],
+          "requirements": [
+            "Delivery time estimation",
+            "Shipping cost calculation",
+            "Standard vs Express options",
+            "Free shipping eligibility",
+            "COD charges",
+            "Pincode serviceability",
+            "Real-time rate fetching"
+          ],
+          "best_practices": [
+            "Show time range not exact date",
+            "Display cost breakdown",
+            "Free shipping on higher orders",
+            "Express delivery option",
+            "Prominent free shipping banner",
+            "Cache rates for performance"
+          ],
+          "implementation_notes": "Cache rates for 24 hours for performance.",
+          "success_metrics": [
+            "Estimate accuracy > 90%",
+            "Load time < 200ms",
+            "Free shipping adoption 40%"
+          ]
+        },
+        {
+          "id": "shipping_labels",
+          "name": "Shipping Label Generation",
+          "description": "Generate and print shipping labels for fulfillment",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["shipping_carrier_integration"],
+          "phase": 2,
+          "technology_stack": ["Carrier APIs", "ReportLab", "Barcode library"],
+          "requirements": [
+            "Automatic label generation",
+            "Barcode printing",
+            "Batch label printing",
+            "Label format per carrier",
+            "PDF download",
+            "Thermal printer support"
+          ],
+          "best_practices": [
+            "High-resolution barcodes",
+            "Multiple label formats",
+            "Batch operations",
+            "Print queue management",
+            "Reprint capability"
+          ],
+          "implementation_notes": "Generate on order confirmation.",
+          "success_metrics": [
+            "Label generation < 2 seconds",
+            "Barcode scan success > 99%"
+          ]
+        },
+        {
+          "id": "shipping_returns",
+          "name": "Return Shipping Integration",
+          "description": "Generate return labels, track return shipments",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["shipping_carrier_integration", "order_returns"],
+          "phase": 3,
+          "technology_stack": ["Carrier APIs", "Return management system"],
+          "requirements": [
+            "Return label generation",
+            "Prepaid return shipping",
+            "Return tracking",
+            "Return pickup scheduling",
+            "Return reason mapping",
+            "Return status updates"
+          ],
+          "best_practices": [
+            "Free return shipping for eligible returns",
+            "Easy label printing",
+            "QR code option",
+            "Pickup from home",
+            "Track return status"
+          ],
+          "implementation_notes": "Integrate with carrier return services.",
+          "success_metrics": [
+            "Return label delivery < 1 minute",
+            "Return label usage > 90%",
+            "Return processing < 7 days"
+          ]
+        }
+      ]
+    },
+
+    "user_account_management": {
+      "features": [
+        {
+          "id": "user_authentication",
+          "name": "User Authentication & Registration",
+          "description": "Email/phone registration, login, password reset",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 20,
+          "dependencies": [],
+          "phase": 1,
+          "technology_stack": ["Django auth", "Email service", "REST API"],
+          "requirements": [
+            "Email registration",
+            "Phone registration",
+            "Password hashing (bcrypt)",
+            "Email verification",
+            "OTP verification",
+            "Password reset",
+            "Social login (optional)",
+            "Account recovery"
+          ],
+          "best_practices": [
+            "Strong password requirements",
+            "Two-factor authentication option",
+            "Account recovery questions",
+            "Session management",
+            "CSRF protection",
+            "Rate limiting on login"
+          ],
+          "implementation_notes": "Use Django's built-in auth with custom User model.",
+          "success_metrics": [
+            "Registration completion > 85%",
+            "Email verification > 80%",
+            "False registrations < 2%"
+          ]
+        },
+        {
+          "id": "user_profile",
+          "name": "User Profile Management",
+          "description": "Edit name, email, phone, profile picture",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 12,
+          "dependencies": ["user_authentication"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "Image processing"],
+          "requirements": [
+            "Profile picture upload",
+            "Edit name/email",
+            "Edit phone number",
+            "Profile visibility",
+            "Profile URL (optional)",
+            "Bio/about section",
+            "Verify email changes"
+          ],
+          "best_practices": [
+            "Profile picture validation",
+            "Image compression",
+            "CDN for image serving",
+            "Profile completion percentage",
+            "Email verification for changes"
+          ],
+          "implementation_notes": "Use Pillow for image processing.",
+          "success_metrics": [
+            "Profile completion > 70%",
+            "Profile picture adoption > 40%"
+          ]
+        },
+        {
+          "id": "user_addresses",
+          "name": "Address Management",
+          "description": "Save multiple addresses, set default delivery address",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["user_authentication"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "Address validation API", "Geocoding"],
+          "requirements": [
+            "Add/edit/delete addresses",
+            "Address type (home, work, other)",
+            "Landmark field",
+            "Set default address",
+            "Address validation",
+            "Pincode lookup",
+            "Multiple addresses support",
+            "Quick address selection at checkout"
+          ],
+          "best_practices": [
+            "Google Places autocomplete",
+            "Address validation",
+            "Postcode validation",
+            "Landmark field for clarity",
+            "Save for next purchase",
+            "Quick select at checkout"
+          ],
+          "implementation_notes": "Use Google Places API for autocomplete.",
+          "success_metrics": [
+            "Average 2-3 saved addresses per user",
+            "Checkout speed improvement 30%"
+          ]
+        },
+        {
+          "id": "user_preferences",
+          "name": "User Preferences & Settings",
+          "description": "Language, currency, notifications, privacy settings",
+          "importance": "MEDIUM",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["user_authentication"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Settings management"],
+          "requirements": [
+            "Language preference",
+            "Currency preference",
+            "Notification settings (email, SMS, push)",
+            "Marketing opt-in/out",
+            "Privacy settings",
+            "Data download option",
+            "Account deletion option"
+          ],
+          "best_practices": [
+            "Granular notification control",
+            "Easy opt-out",
+            "GDPR compliance",
+            "Data portability",
+            "Account deletion with data retention policy"
+          ],
+          "implementation_notes": "Store preferences as JSON in user model.",
+          "success_metrics": [
+            "Preferences customization > 50%",
+            "Email unsubscribe < 10%"
+          ]
+        },
+        {
+          "id": "user_security",
+          "name": "Security Settings & Account Protection",
+          "description": "Two-factor auth, login history, device management",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["user_authentication"],
+          "phase": 2,
+          "technology_stack": ["Django security", "TOTP/SMS", "Device tracking"],
+          "requirements": [
+            "Two-factor authentication (2FA)",
+            "TOTP support (Google Authenticator)",
+            "SMS-based 2FA",
+            "Login history",
+            "Device management",
+            "Session management",
+            "Suspicious activity alerts",
+            "Password change audit"
+          ],
+          "best_practices": [
+            "Mandatory 2FA for high-value accounts",
+            "Backup codes for 2FA",
+            "Session timeout",
+            "Device trust",
+            "Suspicious login alerts",
+            "Regular security audits"
+          ],
+          "implementation_notes": "Use django-otp for TOTP support.",
+          "success_metrics": [
+            "2FA adoption > 30%",
+            "Account compromise incidents < 0.01%"
+          ]
+        }
+      ]
+    },
+
+    "product_discovery": {
+      "features": [
+        {
+          "id": "search_basic",
+          "name": "Basic Product Search",
+          "description": "Search products by keywords",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["product_database"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "PostgreSQL full-text search", "Elasticsearch"],
+          "requirements": [
+            "Keyword search",
+            "Autocomplete suggestions",
+            "Search results display",
+            "Pagination",
+            "Sorting options",
+            "Relevance ranking"
+          ],
+          "best_practices": [
+            "Fast search (< 200ms)",
+            "Autocomplete from popular searches",
+            "Typo tolerance",
+            "Exact match vs partial",
+            "Highlight matches",
+            "Search analytics"
+          ],
+          "implementation_notes": "Start with PostgreSQL full-text, migrate to Elasticsearch if needed.",
+          "success_metrics": [
+            "Search latency < 200ms",
+            "Search conversion > 40%",
+            "Search accuracy > 90%"
+          ]
+        },
+        {
+          "id": "advanced_filters",
+          "name": "Advanced Search & Filtering",
+          "description": "Filter by category, price, brand, rating, etc.",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["search_basic", "product_database"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Elasticsearch", "Redis caching"],
+          "requirements": [
+            "Category hierarchy",
+            "Price range slider",
+            "Brand filter",
+            "Rating filter",
+            "Availability filter",
+            "Discount filter",
+            "Color/size filters",
+            "Multiple selection",
+            "Filter combination (AND/OR logic)",
+            "Clear all filters",
+            "Active filter indicators"
+          ],
+          "best_practices": [
+            "Dynamic filter counts",
+            "URL-encoded filters for sharing",
+            "Filter persistence",
+            "Mobile-friendly filters (drawer/modal)",
+            "Popular filters highlighted",
+            "Search within category"
+          ],
+          "implementation_notes": "Use Elasticsearch facets for dynamic filter counts.",
+          "success_metrics": [
+            "Filter usage > 70% of searches",
+            "Conversion improvement 20-30%"
+          ]
+        },
+        {
+          "id": "sort_options",
+          "name": "Sorting & Result Ordering",
+          "description": "Sort by relevance, price, rating, newest, bestselling",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 12,
+          "dependencies": ["search_basic"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "Elasticsearch"],
+          "requirements": [
+            "Sort by relevance",
+            "Sort by price (asc/desc)",
+            "Sort by rating",
+            "Sort by newest",
+            "Sort by bestselling",
+            "Sort by popularity",
+            "Custom sort order"
+          ],
+          "best_practices": [
+            "Default to relevance",
+            "Remember user's sort preference",
+            "Highlight current sort",
+            "Show item count per sort"
+          ],
+          "implementation_notes": "Implement in Elasticsearch query.",
+          "success_metrics": [
+            "Conversion improvement 5-10%",
+            "User satisfaction > 80%"
+          ]
+        },
+        {
+          "id": "quick_view",
+          "name": "Quick View Modal",
+          "description": "Preview product in modal without navigation",
+          "importance": "MEDIUM",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 12,
+          "dependencies": ["product_details"],
+          "phase": 2,
+          "technology_stack": ["JavaScript modal", "AJAX loading", "CSS animations"],
+          "requirements": [
+            "Open modal on hover/click",
+            "Display product image",
+            "Display product price",
+            "Display rating",
+            "Quick add to cart",
+            "Link to full details",
+            "Close modal",
+            "Load next/prev product"
+          ],
+          "best_practices": [
+            "Smooth animations",
+            "Mobile-friendly (touch friendly)",
+            "Keyboard navigation (arrow keys, ESC)",
+            "Image zoom on hover",
+            "Stay in context",
+            "Fast loading"
+          ],
+          "implementation_notes": "Use Bootstrap modal or custom lightweight modal.",
+          "success_metrics": [
+            "Quick view usage > 20%",
+            "Quick add to cart conversion > 30%"
+          ]
+        },
+        {
+          "id": "product_comparison",
+          "name": "Product Comparison Tool",
+          "description": "Compare products side-by-side",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["product_database"],
+          "phase": 3,
+          "technology_stack": ["Django ORM", "JavaScript table", "Session storage"],
+          "requirements": [
+            "Add products to comparison",
+            "Remove products",
+            "Compare up to 5 products",
+            "Side-by-side table display",
+            "Highlight differences",
+            "Sort by relevance",
+            "Download comparison",
+            "Share comparison link",
+            "Mobile-optimized table"
+          ],
+          "best_practices": [
+            "Save to browser (localStorage)",
+            "Generate shareable links",
+            "Quick add to cart from comparison",
+            "Highlight key differences",
+            "Mobile: horizontal scroll or carousel",
+            "Print-friendly format"
+          ],
+          "implementation_notes": "Use responsive table or carousel for mobile.",
+          "success_metrics": [
+            "Comparison tool usage > 15%",
+            "Conversion improvement 10-15%"
+          ]
+        }
+      ]
+    },
+
+    "product_details": {
+      "features": [
+        {
+          "id": "product_page_core",
+          "name": "Core Product Details Page",
+          "description": "Display product info, images, price, stock status",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 24,
+          "dependencies": [],
+          "phase": 1,
+          "technology_stack": ["Django templates", "JavaScript image gallery"],
+          "requirements": [
+            "Product images (gallery with zoom)",
+            "Product title and description",
+            "Price display",
+            "Discounted price",
+            "Stock status",
+            "Add to cart button",
+            "Wishlist button",
+            "Share buttons",
+            "SKU/Product ID",
+            "Availability status"
+          ],
+          "best_practices": [
+            "High-quality images",
+            "Zoom functionality",
+            "Multiple images (min 3-4)",
+            "Color/variant swatches",
+            "Quick add to cart",
+            "Clear availability status",
+            "Trust badges"
+          ],
+          "implementation_notes": "Use responsive image gallery.",
+          "success_metrics": [
+            "Page load < 2 seconds",
+            "Image load < 500ms",
+            "Add to cart click-through > 30%"
+          ]
+        },
+        {
+          "id": "product_variants",
+          "name": "Product Variants (Size, Color, etc.)",
+          "description": "Select size, color, quantity before adding to cart",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["product_page_core"],
+          "phase": 1,
+          "technology_stack": ["Django ORM", "JavaScript", "AJAX"],
+          "requirements": [
+            "Size selector",
+            "Color selector",
+            "Variant-specific images",
+            "Variant-specific price",
+            "Variant-specific stock",
+            "Quantity selector",
+            "Out of stock variant graying",
+            "Variant description"
+          ],
+          "best_practices": [
+            "Color swatches for visual selection",
+            "Size chart display",
+            "Update price on variant select",
+            "Update images on color select",
+            "Show stock per variant",
+            "Highlight popular sizes",
+            "Recommend size (if possible)"
+          ],
+          "implementation_notes": "Use AJAX to update images and price.",
+          "success_metrics": [
+            "Variant selection accuracy > 95%",
+            "Fewer variant-related returns"
+          ]
+        },
+        {
+          "id": "product_reviews_ratings",
+          "name": "Product Reviews & Ratings",
+          "description": "Display reviews, ratings, helpful votes, filters",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["product_page_core", "user_authentication"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Star rating", "Comment moderation"],
+          "requirements": [
+            "Star rating display (1-5)",
+            "Review text display",
+            "Reviewer name and profile",
+            "Review date",
+            "Helpful/Unhelpful votes",
+            "Verified purchase badge",
+            "Review images/videos",
+            "Review filtering (by rating)",
+            "Review sorting (helpful, recent)",
+            "Review moderation",
+            "Report inappropriate review"
+          ],
+          "best_practices": [
+            "Show only verified purchase reviews prominently",
+            "Encourage photos/videos",
+            "Moderate for fake reviews",
+            "Respond to reviews (seller)",
+            "Average rating at top",
+            "Distribution histogram",
+            "Filter by star rating",
+            "Sort by helpful first"
+          ],
+          "implementation_notes": "Build review moderation workflow.",
+          "success_metrics": [
+            "Review collection rate > 20%",
+            "Average rating improves CTR 10-15%",
+            "False reviews < 2%"
+          ]
+        },
+        {
+          "id": "product_recommendations",
+          "name": "Product Recommendations & Related Items",
+          "description": "Show related products, frequently bought together",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["product_database", "analytics"],
+          "phase": 2,
+          "technology_stack": ["Recommendation engine", "Collaborative filtering", "Redis"],
+          "requirements": [
+            "Related products",
+            "Frequently bought together",
+            "Also viewed by users",
+            "Best sellers in category",
+            "Trending items",
+            "Personalized recommendations",
+            "Caching"
+          ],
+          "best_practices": [
+            "Show 4-6 recommendations",
+            "Multi-algorithm approach",
+            "Rotate recommendations",
+            "Cross-sell opportunities",
+            "Upsell when appropriate",
+            "A/B test recommendation algorithms"
+          ],
+          "implementation_notes": "Implement collaborative filtering and content-based filtering.",
+          "success_metrics": [
+            "Recommendation click-through > 15%",
+            "AOV increase 10-15%",
+            "Cross-sell revenue 5-10%"
+          ]
+        }
+      ]
+    },
+
+    "review_rating_system": {
+      "features": [
+        {
+          "id": "review_submission",
+          "name": "Review Submission & Moderation",
+          "description": "Allow users to write and submit product reviews",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["order_management", "user_authentication"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Forms", "Email notifications"],
+          "requirements": [
+            "Submit review after purchase",
+            "Rate 1-5 stars",
+            "Write review text",
+            "Upload images/video",
+            "Review moderation queue",
+            "Spam detection",
+            "Profanity filter",
+            "Duplicate review detection",
+            "Seller response to review"
+          ],
+          "best_practices": [
+            "Allow review submission post-delivery",
+            "Encourage photos/videos",
+            "Character min/max limits",
+            "Moderation for spam/fake",
+            "Incentivize helpful reviews",
+            "Seller response mechanism",
+            "Review edit/delete by author"
+          ],
+          "implementation_notes": "Use Celery for moderation tasks.",
+          "success_metrics": [
+            "Review submission rate > 20%",
+            "False reviews < 2%",
+            "Moderation time < 24 hours"
+          ]
+        },
+        {
+          "id": "review_system_analytics",
+          "name": "Review Analytics & Insights",
+          "description": "Track review metrics, trends, buyer behavior",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["review_submission"],
+          "phase": 3,
+          "technology_stack": ["Analytics engine", "Data warehouse", "Visualizations"],
+          "requirements": [
+            "Average rating trends",
+            "Review volume trends",
+            "Rating distribution",
+            "Top keywords in reviews",
+            "Negative review tracking",
+            "Sentiment analysis",
+            "Competitor rating comparison"
+          ],
+          "best_practices": [
+            "Track review trends monthly",
+            "Identify product issues from reviews",
+            "Competitive analysis",
+            "Sentiment trend tracking",
+            "Seller insights dashboard"
+          ],
+          "implementation_notes": "Use NLP for sentiment analysis.",
+          "success_metrics": [
+            "Actionable insights for sellers",
+            "Issue identification within 48 hours"
+          ]
+        }
+      ]
+    },
+
+    "wishlist_saved_items": {
+      "features": [
+        {
+          "id": "wishlist_basic",
+          "name": "Wishlist / Saved Items",
+          "description": "Save products for later purchase, share wishlist",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["user_authentication", "product_database"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "REST API"],
+          "requirements": [
+            "Add/remove from wishlist",
+            "Multiple wishlists",
+            "Wishlist sharing",
+            "Wishlist privacy",
+            "Price drop notifications",
+            "Availability notifications",
+            "Quick add from wishlist",
+            "Move to cart"
+          ],
+          "best_practices": [
+            "Heart icon for wishlist",
+            "Personal wishlists",
+            "Shareable wishlists (gifts)",
+            "Price drop alerts",
+            "Restock alerts",
+            "Wishlist count on products",
+            "Email wishlist reminders"
+          ],
+          "implementation_notes": "Simple many-to-many relationship.",
+          "success_metrics": [
+            "Wishlist adoption > 30%",
+            "Wishlist-to-purchase conversion > 25%",
+            "Average wishlist size 5-10 items"
+          ]
+        },
+        {
+          "id": "wishlist_notifications",
+          "name": "Wishlist Price & Availability Notifications",
+          "description": "Alert users to price drops, back in stock",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["wishlist_basic"],
+          "phase": 3,
+          "technology_stack": ["Celery tasks", "Email service", "Push notifications"],
+          "requirements": [
+            "Price drop detection (10% threshold)",
+            "Back in stock notification",
+            "Flash sale notification",
+            "Email notification",
+            "Push notification (app)",
+            "Notification preferences",
+            "Notification frequency"
+          ],
+          "best_practices": [
+            "Smart notification threshold",
+            "Batch notifications to reduce spam",
+            "Frequency capping",
+            "Easy unsubscribe",
+            "Quick add from notification"
+          ],
+          "implementation_notes": "Daily batch job to check prices.",
+          "success_metrics": [
+            "Notification open rate > 25%",
+            "Conversion from notification > 15%",
+            "Low unsubscribe rate < 5%"
+          ]
+        }
+      ]
+    },
+
+    "mobile_responsiveness": {
+      "features": [
+        {
+          "id": "mobile_basic_responsiveness",
+          "name": "Basic Mobile Responsiveness",
+          "description": "Mobile-friendly layout, touch optimization",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 40,
+          "dependencies": [],
+          "phase": 1,
+          "technology_stack": ["Bootstrap/Tailwind", "CSS media queries", "Viewport meta tag"],
+          "requirements": [
+            "Responsive breakpoints (320px, 768px, 1024px)",
+            "Touch-friendly buttons (min 44x44px)",
+            "Appropriate spacing for touch",
+            "Readable text (min 16px on mobile)",
+            "Mobile images optimization",
+            "Viewport configuration",
+            "No horizontal scrolling"
+          ],
+          "best_practices": [
+            "Mobile-first design approach",
+            "Test on real devices",
+            "Touch spacing (44x44px buttons)",
+            "Large tap targets",
+            "Minimize form fields",
+            "Fast loading on 3G",
+            "No Flash/obsolete tech"
+          ],
+          "implementation_notes": "Use Bootstrap 5 responsive utilities.",
+          "success_metrics": [
+            "Mobile usability score > 90",
+            "Mobile conversion > 60% of desktop",
+            "Mobile page speed > 80"
+          ]
+        },
+        {
+          "id": "mobile_navigation",
+          "name": "Mobile Navigation & Menu",
+          "description": "Hamburger menu, bottom navigation, mobile UX",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["mobile_basic_responsiveness"],
+          "phase": 1,
+          "technology_stack": ["CSS hamburger", "JavaScript menu", "Sidebar"],
+          "requirements": [
+            "Hamburger menu icon",
+            "Slide-out navigation drawer",
+            "Bottom navigation bar",
+            "Sticky header",
+            "Search bar accessible",
+            "Quick links/favorites",
+            "Account link prominent"
+          ],
+          "best_practices": [
+            "Hamburger in top left/right",
+            "Bottom nav for key actions",
+            "Category quick access",
+            "Search prominent",
+            "Account/orders easy access",
+            "Intuitive menu structure"
+          ],
+          "implementation_notes": "Use Bootstrap offcanvas for drawer.",
+          "success_metrics": [
+            "Menu usage > 70%",
+            "Navigation time < 2 seconds",
+            "Navigation error rate < 5%"
+          ]
+        },
+        {
+          "id": "mobile_checkout",
+          "name": "Mobile-Optimized Checkout",
+          "description": "One-page or minimal-step mobile checkout",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["checkout_cod", "mobile_responsiveness"],
+          "phase": 1,
+          "technology_stack": ["Bootstrap", "Mobile forms", "Auto-fill"],
+          "requirements": [
+            "One-step or minimal steps",
+            "Auto-fill address from saved",
+            "Phone keyboard for phone input",
+            "Postal code keyboard",
+            "Minimize form fields",
+            "Touch-friendly buttons",
+            "Bottom action bar",
+            "Easy edit options"
+          ],
+          "best_practices": [
+            "One-page checkout if possible",
+            "Auto-focus appropriate inputs",
+            "Smart keyboard types (tel, email, postal-code)",
+            "Save address option",
+            "Clear progress indicator",
+            "Minimal required fields",
+            "Quick address lookup"
+          ],
+          "implementation_notes": "Use HTML5 input types for smart keyboards.",
+          "success_metrics": [
+            "Mobile checkout completion > 75%",
+            "Form completion time < 2 minutes",
+            "Mobile conversion parity 70% of desktop"
+          ]
+        },
+        {
+          "id": "pwa_considerations",
+          "name": "Progressive Web App (PWA) Considerations",
+          "description": "App-like experience, offline support, install prompts",
+          "importance": "MEDIUM",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 56,
+          "dependencies": ["mobile_responsiveness"],
+          "phase": 4,
+          "technology_stack": ["Service Workers", "Manifest.json", "Cache strategies"],
+          "requirements": [
+            "Service Worker registration",
+            "Web manifest file",
+            "Install prompt",
+            "Offline functionality",
+            "App icon and splash screen",
+            "Home screen installation",
+            "Push notifications",
+            "Background sync"
+          ],
+          "best_practices": [
+            "Cache strategy for assets",
+            "Offline product pages",
+            "Reliable checkout flow",
+            "App-like animations",
+            "Splash screen branding",
+            "Badge for new notifications",
+            "App shortcuts"
+          ],
+          "implementation_notes": "Create comprehensive PWA implementation.",
+          "success_metrics": [
+            "PWA install rate > 10%",
+            "PWA user retention > 80% vs web",
+            "PWA session time 40% higher"
+          ]
+        }
+      ]
+    },
+
+    "user_trust_security": {
+      "features": [
+        {
+          "id": "ssl_https",
+          "name": "SSL/HTTPS & Data Encryption",
+          "description": "Secure all connections with SSL/TLS certificates",
+          "importance": "CRITICAL",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 8,
+          "dependencies": [],
+          "phase": 1,
+          "technology_stack": ["Let's Encrypt SSL", "Nginx/Apache", "HSTS"],
+          "requirements": [
+            "Valid SSL certificate",
+            "All traffic HTTPS",
+            "HSTS header enabled",
+            "Mixed content prevention",
+            "Secure cookies (secure, httponly, samesite)",
+            "TLS 1.2+",
+            "Certificate renewal automation"
+          ],
+          "best_practices": [
+            "Always HTTPS (no HTTP fallback)",
+            "HSTS enabled",
+            "Secure cookies",
+            "Certificate transparency",
+            "Regular certificate updates",
+            "Redirect HTTP to HTTPS"
+          ],
+          "implementation_notes": "Use Let's Encrypt for free SSL.",
+          "success_metrics": [
+            "100% HTTPS coverage",
+            "Zero mixed content warnings",
+            "Certificate always valid"
+          ]
+        },
+        {
+          "id": "otp_verification",
+          "name": "OTP Email/SMS Verification",
+          "description": "Two-factor authentication for account security",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 24,
+          "dependencies": ["user_authentication"],
+          "phase": 2,
+          "technology_stack": ["Django OTP", "Twilio/SMS gateway", "Email service"],
+          "requirements": [
+            "Email OTP generation",
+            "SMS OTP generation",
+            "6-digit OTP",
+            "OTP expiration (10 minutes)",
+            "Rate limiting",
+            "Resend OTP",
+            "Backup codes",
+            "Device trust"
+          ],
+          "best_practices": [
+            "6-digit OTP (balance security/UX)",
+            "10-minute expiration",
+            "Rate limit OTP generation",
+            "Send immediately, don't store",
+            "Clear verification UI",
+            "Option to switch method (email to SMS)"
+          ],
+          "implementation_notes": "Use django-otp library.",
+          "success_metrics": [
+            "OTP delivery > 99%",
+            "False rejections < 1%",
+            "Adoption > 30% for high-value transactions"
+          ]
+        },
+        {
+          "id": "address_validation",
+          "name": "Address Validation & Verification",
+          "description": "Verify delivery addresses are real and serviceable",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 20,
+          "dependencies": ["user_addresses"],
+          "phase": 2,
+          "technology_stack": ["Google Maps API", "Address validation API", "Geocoding"],
+          "requirements": [
+            "Google Places autocomplete",
+            "Postal code validation",
+            "Pincode serviceability check",
+            "Geocoding verification",
+            "Format validation",
+            "Address standardization",
+            "Delivery not possible detection"
+          ],
+          "best_practices": [
+            "Autocomplete for ease of entry",
+            "Real-time validation",
+            "Clear error messages",
+            "Allow manual override",
+            "Save validated addresses",
+            "Alert if not serviceable"
+          ],
+          "implementation_notes": "Use Google Places Autocomplete + Address Validation API.",
+          "success_metrics": [
+            "Address validation accuracy > 95%",
+            "False rejections < 2%",
+            "Delivery failure rate < 3%"
+          ]
+        },
+        {
+          "id": "pci_compliance",
+          "name": "PCI DSS Compliance (Future Phase)",
+          "description": "Prepare infrastructure for payment card compliance",
+          "importance": "HIGH",
+          "complexity": "COMPLEX",
+          "time_estimate_hours": 80,
+          "dependencies": ["checkout_security", "ssl_https"],
+          "phase": 4,
+          "technology_stack": ["Payment tokenization", "Vault storage", "Encryption"],
+          "requirements": [
+            "Never store card data locally",
+            "Tokenization for card storage",
+            "Encrypted transmission",
+            "PCI Level 3 compliance",
+            "Regular security audits",
+            "Penetration testing",
+            "Data retention policy",
+            "Encryption key management"
+          ],
+          "best_practices": [
+            "Use payment gateway (Razorpay) for PCI",
+            "Tokenize all card data",
+            "Separate card servers if needed",
+            "Annual PCI audit",
+            "Penetration testing",
+            "Employee training",
+            "Vendor management"
+          ],
+          "implementation_notes": "Outsource PCI compliance to payment gateway.",
+          "compliance_standards": ["PCI DSS Level 3"],
+          "success_metrics": [
+            "PCI compliance score 100%",
+            "Zero data breaches",
+            "Annual audit pass"
+          ]
+        },
+        {
+          "id": "email_security",
+          "name": "Email Confirmation & Security Emails",
+          "description": "Send transactional emails with verification links",
+          "importance": "HIGH",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 12,
+          "dependencies": ["user_authentication"],
+          "phase": 1,
+          "technology_stack": ["Email backend", "Django signing", "Email templates"],
+          "requirements": [
+            "Email verification link",
+            "Token expiration",
+            "Password reset email",
+            "Account activity email",
+            "Unverified address warning",
+            "Suspicious activity alert"
+          ],
+          "best_practices": [
+            "Cryptographically signed tokens",
+            "Token expiration (24 hours)",
+            "Link only works once",
+            "Rate limiting on email sends",
+            "Transactional email service",
+            "Branded email templates"
+          ],
+          "implementation_notes": "Use Django's signing module for tokens.",
+          "success_metrics": [
+            "Email verification > 80%",
+            "False positive rate < 1%"
+          ]
+        }
+      ]
+    },
+
+    "admin_management": {
+      "features": [
+        {
+          "id": "order_dashboard",
+          "name": "Admin Order Dashboard",
+          "description": "View, manage, and process orders",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 40,
+          "dependencies": ["order_creation"],
+          "phase": 2,
+          "technology_stack": ["Django admin", "REST API", "Charting library"],
+          "requirements": [
+            "Order list view with filters",
+            "Order detail view",
+            "Bulk order actions",
+            "Order status updates",
+            "Shipment management",
+            "Refund processing",
+            "Revenue dashboard",
+            "Key metrics (AOV, conversion, etc.)"
+          ],
+          "best_practices": [
+            "Real-time order stream",
+            "Bulk operations (fulfill multiple)",
+            "Quick order actions",
+            "Order timeline view",
+            "Customer communication",
+            "Quick metrics at glance",
+            "Search and filter"
+          ],
+          "implementation_notes": "Extend Django admin or build custom dashboard.",
+          "success_metrics": [
+            "Order processing time < 5 minutes",
+            "Admin satisfaction > 80%",
+            "Error rate < 2%"
+          ]
+        },
+        {
+          "id": "inventory_management",
+          "name": "Inventory Management System",
+          "description": "Track stock levels, manage inventory",
+          "importance": "CRITICAL",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 36,
+          "dependencies": ["product_database"],
+          "phase": 2,
+          "technology_stack": ["Django ORM", "Inventory tracking", "Low stock alerts"],
+          "requirements": [
+            "Real-time stock tracking",
+            "Stock level adjustments",
+            "Low stock alerts",
+            "Reorder point configuration",
+            "Supplier management",
+            "Purchase order creation",
+            "Stock history/audit",
+            "Reserved stock (for orders)",
+            "Variant-level inventory"
+          ],
+          "best_practices": [
+            "Real-time inventory updates",
+            "Reserve stock for pending orders",
+            "Low stock alerts",
+            "Reorder recommendations",
+            "Supplier integration",
+            "Inventory forecasting",
+            "Dead stock tracking"
+          ],
+          "implementation_notes": "Implement inventory locking during checkout.",
+          "success_metrics": [
+            "Inventory accuracy > 98%",
+            "Stockout prevention 95%+",
+            "Overstock reduction 20%"
+          ]
+        },
+        {
+          "id": "shipping_management",
+          "name": "Shipping Management Interface",
+          "description": "Manage shipments, print labels, track deliveries",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["shipping_carrier_integration"],
+          "phase": 2,
+          "technology_stack": ["Shipping APIs", "Label printing", "Batch processing"],
+          "requirements": [
+            "Shipment list view",
+            "Bulk label printing",
+            "Carrier selection",
+            "Pickup scheduling",
+            "Manifest generation",
+            "Delivery status tracking",
+            "Return authorization",
+            "Shipping analytics"
+          ],
+          "best_practices": [
+            "One-click bulk fulfillment",
+            "Multiple carrier support",
+            "Batch label printing",
+            "Real-time tracking updates",
+            "Return label generation",
+            "Delivery proof collection"
+          ],
+          "implementation_notes": "Build wrapper around carrier APIs.",
+          "success_metrics": [
+            "Fulfillment time < 24 hours",
+            "Label print success > 99%",
+            "Tracking accuracy > 95%"
+          ]
+        },
+        {
+          "id": "analytics_reporting",
+          "name": "Analytics & Business Reporting",
+          "description": "Dashboard with key metrics, trends, insights",
+          "importance": "HIGH",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 40,
+          "dependencies": ["order_management"],
+          "phase": 3,
+          "technology_stack": ["Analytics engine", "Data warehouse", "Visualization"],
+          "requirements": [
+            "Revenue dashboard",
+            "Order metrics (count, AOV, value)",
+            "Conversion funnel",
+            "Customer metrics",
+            "Product performance",
+            "Trend analysis",
+            "Comparison periods",
+            "Custom report builder",
+            "Export capabilities"
+          ],
+          "metrics_tracked": [
+            "Total Revenue (daily, weekly, monthly)",
+            "Number of Orders",
+            "Average Order Value (AOV)",
+            "Conversion Rate",
+            "Customer Acquisition Cost (CAC)",
+            "Product bestsellers",
+            "Top categories",
+            "Return rate by product",
+            "Average order processing time"
+          ],
+          "best_practices": [
+            "Real-time dashboard",
+            "Drill-down capabilities",
+            "Trend visualization",
+            "Comparison with previous period",
+            "Alerts for anomalies",
+            "Exportable reports",
+            "Mobile dashboard"
+          ],
+          "implementation_notes": "Use analytics library like Metabase or build custom.",
+          "success_metrics": [
+            "Dashboard load time < 3 seconds",
+            "Data freshness < 1 hour",
+            "100% uptime"
+          ]
+        }
+      ]
+    },
+
+    "chatbot_support": {
+      "features": [
+        {
+          "id": "chatbot_faq",
+          "name": "FAQ Bot & Automated Support",
+          "description": "Answer common questions automatically",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 32,
+          "dependencies": ["user_authentication"],
+          "phase": 4,
+          "technology_stack": ["Chatbot framework (Botpress/Rasa)", "NLP", "Intent matching"],
+          "requirements": [
+            "FAQ database",
+            "Intent recognition",
+            "Natural language processing",
+            "Escalation to human",
+            "Multi-language support (future)",
+            "Chat history",
+            "Satisfaction rating",
+            "Analytics"
+          ],
+          "common_queries": [
+            "Order status and tracking",
+            "Return and refund policy",
+            "Shipping information",
+            "Product details",
+            "Payment options",
+            "Account issues",
+            "Delivery delays",
+            "Damaged items"
+          ],
+          "best_practices": [
+            "Fast first response",
+            "Natural language understanding",
+            "Escalate to human if needed",
+            "Provide quick solutions",
+            "Maintain conversation history",
+            "Track bot performance",
+            "Continuous improvement"
+          ],
+          "implementation_notes": "Start with rule-based FAQ, evolve to ML-based.",
+          "success_metrics": [
+            "First response time < 2 seconds",
+            "FAQ resolution rate > 70%",
+            "Escalation rate < 30%",
+            "User satisfaction > 75%"
+          ]
+        },
+        {
+          "id": "live_chat",
+          "name": "Live Chat Integration",
+          "description": "Connect customers with support agents",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 28,
+          "dependencies": ["chatbot_faq"],
+          "phase": 4,
+          "technology_stack": ["Messaging API (Intercom/Zendesk)", "WebSockets", "Queue"],
+          "requirements": [
+            "Real-time messaging",
+            "Agent queue management",
+            "Chat history",
+            "Pre-chat form",
+            "Offline message queue",
+            "Agent status",
+            "Canned responses",
+            "Transfer between agents",
+            "Chat transcripts"
+          ],
+          "best_practices": [
+            "Bot handoff to human",
+            "Quick agent response (< 1 minute)",
+            "Multiple agents support",
+            "Chat queue management",
+            "Agent productivity tracking",
+            "Customer satisfaction survey",
+            "Chat analytics"
+          ],
+          "implementation_notes": "Use Intercom or Zendesk Chat.",
+          "success_metrics": [
+            "Response time < 1 minute",
+            "Resolution on first contact > 80%",
+            "Customer satisfaction > 85%"
+          ]
+        },
+        {
+          "id": "chatbot_order_tracking",
+          "name": "Chatbot - Order Status Queries",
+          "description": "Allow users to track orders via chat",
+          "importance": "MEDIUM",
+          "complexity": "SIMPLE",
+          "time_estimate_hours": 16,
+          "dependencies": ["chatbot_faq", "order_tracking"],
+          "phase": 4,
+          "technology_stack": ["Chatbot", "Order API"],
+          "requirements": [
+            "Order lookup by order number",
+            "Order lookup by email",
+            "Status display",
+            "Tracking number display",
+            "Estimated delivery",
+            "Return status"
+          ],
+          "best_practices": [
+            "Link to full tracking page",
+            "Predict delivery date",
+            "Handle multiple orders",
+            "Offer solutions for delays"
+          ],
+          "implementation_notes": "Extend FAQ bot with order API integration.",
+          "success_metrics": [
+            "Query resolution > 90%",
+            "User satisfaction > 80%"
+          ]
+        },
+        {
+          "id": "multilingual_support",
+          "name": "Multi-Language Support (Future Phase)",
+          "description": "Support multiple languages on platform",
+          "importance": "MEDIUM",
+          "complexity": "MODERATE",
+          "time_estimate_hours": 44,
+          "dependencies": [],
+          "phase": 4,
+          "technology_stack": ["Django i18n", "Translation service", "RTL support"],
+          "requirements": [
+            "Language selection",
+            "Content translation",
+            "Currency localization",
+            "Date/time formatting",
+            "Regional payment methods",
+            "Regional shipping",
+            "Chatbot translation"
+          ],
+          "supported_languages": [
+            "English",
+            "Hindi",
+            "Spanish",
+            "French",
+            "Portuguese",
+            "Indonesian"
+          ],
+          "best_practices": [
+            "Professional translation (not auto)",
+            "Regional currency",
+            "Date format localization",
+            "Payment method per region",
+            "Local payment gateways",
+            "Regional content"
+          ],
+          "implementation_notes": "Use Django i18n framework.",
+          "success_metrics": [
+            "Language adoption > 30%",
+            "Regional revenue improvement 20-30%"
+          ]
+        }
+      ]
+    }
+  },
+
+  "technology_recommendations": {
+    "backend": {
+      "framework": "Django (current)",
+      "database": "PostgreSQL",
+      "cache": "Redis",
+      "task_queue": "Celery",
+      "api": "Django REST Framework",
+      "search": "PostgreSQL full-text search → Elasticsearch (scaling)",
+      "messaging": "Celery with Redis broker"
+    },
+    "frontend": {
+      "framework": "Bootstrap 5 / Tailwind CSS",
+      "mobile": "React Native (app) or PWA",
+      "state_management": "Redux or Context API",
+      "real_time": "WebSockets (Django Channels)",
+      "forms": "Django Forms + Ajax validation"
+    },
+    "infrastructure": {
+      "hosting": "AWS / DigitalOcean / Heroku",
+      "cdn": "CloudFlare",
+      "email": "SendGrid / Mailgun",
+      "sms": "Twilio",
+      "analytics": "Google Analytics 4",
+      "monitoring": "Sentry / New Relic",
+      "logging": "ELK Stack / CloudWatch"
+    },
+    "integrations": {
+      "payments": "Razorpay (India)",
+      "shipping": "Delhivery, Bluedart, Ecom Express APIs",
+      "address_validation": "Google Places API",
+      "chatbot": "Botpress / Rasa",
+      "live_chat": "Intercom / Zendesk"
+    }
+  },
+
+  "risk_assessment": {
+    "high_risk_areas": [
+      {
+        "area": "Payment Processing",
+        "risks": ["PCI compliance", "Fraud detection", "Payment failures"],
+        "mitigation": "Use established payment gateway (Razorpay), implement fraud detection"
+      },
+      {
+        "area": "Order Fulfillment",
+        "risks": ["Shipping delays", "Lost packages", "Delivery failures"],
+        "mitigation": "Multi-carrier integration, real-time tracking, insurance"
+      },
+      {
+        "area": "Security",
+        "risks": ["Data breach", "Account takeover", "SQL injection"],
+        "mitigation": "SSL/TLS, OTP, input validation, regular security audits"
+      },
+      {
+        "area": "Inventory",
+        "risks": ["Overselling", "Stock discrepancies", "Dead stock"],
+        "mitigation": "Real-time inventory sync, automated alerts, forecasting"
+      }
+    ]
+  },
+
+  "success_metrics": {
+    "business": {
+      "gross_merchandise_value": "Track total product sales value",
+      "orders_per_day": "Transaction volume",
+      "average_order_value": "AOV benchmark",
+      "revenue_per_user": "User lifetime value",
+      "customer_acquisition_cost": "Marketing efficiency",
+      "retention_rate": "Repeat purchase %",
+      "net_promoter_score": "Brand loyalty (target: > 50)"
+    },
+    "user_experience": {
+      "cart_abandonment_rate": "Target < 30%",
+      "checkout_completion": "Target > 85%",
+      "mobile_conversion": "Target 70% of desktop",
+      "page_load_time": "Target < 2 seconds",
+      "search_to_purchase": "Target < 5 minutes",
+      "customer_satisfaction": "Target > 4.0 rating"
+    },
+    "operational": {
+      "order_processing_time": "Target < 24 hours",
+      "fulfillment_rate": "Target 99%+",
+      "delivery_on_time": "Target 95%+",
+      "return_rate": "Target < 5%",
+      "support_ticket_resolution": "Target < 24 hours",
+      "system_uptime": "Target 99.9%"
+    }
+  },
+
+  "development_timeline": {
+    "phase_1_mvp": {
+      "duration": "8 weeks",
+      "start_month": "Month 1",
+      "end_month": "Month 2",
+      "deliverables": [
+        "Shopping cart",
+        "COD checkout",
+        "Order placement",
+        "Basic mobile responsiveness",
+        "User authentication"
+      ]
+    },
+    "phase_2_trust": {
+      "duration": "8 weeks",
+      "start_month": "Month 3",
+      "end_month": "Month 4",
+      "deliverables": [
+        "Order tracking",
+        "Review system",
+        "Wishlist",
+        "Advanced search",
+        "OTP verification",
+        "SSL/HTTPS"
+      ]
+    },
+    "phase_3_scale": {
+      "duration": "12 weeks",
+      "start_month": "Month 5",
+      "end_month": "Month 7",
+      "deliverables": [
+        "Product comparison",
+        "Quick view",
+        "Full order management",
+        "Shipping integration",
+        "Inventory system",
+        "Admin dashboard",
+        "Analytics"
+      ]
+    },
+    "phase_4_intelligence": {
+      "duration": "12 weeks",
+      "start_month": "Month 8",
+      "end_month": "Month 10",
+      "deliverables": [
+        "Chatbot",
+        "Live chat",
+        "Multi-language",
+        "PWA",
+        "Additional payment methods",
+        "Advanced analytics"
+      ]
+    }
+  },
+
+  "estimated_resources": {
+    "team_composition": {
+      "backend_developers": 2,
+      "frontend_developers": 2,
+      "qa_engineers": 1,
+      "product_manager": 1,
+      "designer": 1
+    },
+    "total_development_hours": 2400,
+    "estimated_cost": {
+      "currency": "USD",
+      "note": "Approximate for India/South Asia",
+      "backend_development": 50000,
+      "frontend_development": 40000,
+      "qa_testing": 15000,
+      "infrastructure_first_month": 5000,
+      "third_party_services": 10000,
+      "total": 120000
+    }
+  },
+
+  "conclusion": {
+    "summary": "This roadmap provides a comprehensive path to building a production-ready e-commerce platform competitive with Amazon, Shopify, and AliExpress. The phased approach allows for MVP launch in 2 months with iterative additions of features.",
+    "key_success_factors": [
+      "Prioritize mobile-first experience",
+      "Build trust through reviews, ratings, security",
+      "Optimize checkout to reduce friction",
+      "Integrate multiple shipping partners early",
+      "Implement strong security and compliance",
+      "Focus on data analytics for continuous improvement",
+      "Build in scalability from the start"
+    ],
+    "next_steps": [
+      "Review and prioritize features based on business goals",
+      "Allocate resources to Phase 1",
+      "Set up development environment",
+      "Begin Phase 1 implementation",
+      "Plan weekly sprint reviews"
+    ]
+  }
+}
