@@ -252,3 +252,54 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# ============================================================================
+# CACHING CONFIGURATION
+# ============================================================================
+# For Stage 2: Uses Django's database cache (good for development)
+# For Production: Switch to Redis for better performance
+# See: https://docs.djangoproject.com/en/4.2/topics/cache/
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'django_cache_table',
+        'TIMEOUT': 3600,  # Default timeout in seconds (1 hour)
+        'OPTIONS': {
+            'MAX_ENTRIES': 10000,
+        }
+    }
+}
+
+# Cache timeout constants (in seconds) - Adjust these to tune performance
+CACHE_TIMEOUT = {
+    'popular_products': 24 * 60 * 60,        # 24 hours - stable data
+    'trending_products': 6 * 60 * 60,        # 6 hours - daily changes
+    'personalized_recommendations': 3 * 60 * 60,  # 3 hours - user behavior evolves
+    'user_segment': 24 * 60 * 60,            # 24 hours - classification stable
+    'product_filters': 12 * 60 * 60,         # 12 hours - counts relatively stable
+}
+
+# ============================================================================
+# RECOMMENDATION ENGINE CONFIGURATION
+# ============================================================================
+RECOMMENDATION_CONFIG = {
+    # User Segmentation Thresholds
+    'new_user_days': 7,                      # Users < 7 days old = "new"
+    'dormant_days': 30,                      # No activity > 30 days = "dormant"
+    'frequent_buyer_purchases': 3,           # 3+ purchases = "frequent_buyer"
+    'frequent_buyer_spend_threshold': 500,   # $500+ spend = "frequent_buyer"
+    'active_user_spend_threshold': 100,      # $100-$500 = "active"
+    
+    # Popularity Score Weights (must sum to 1.0)
+    'review_weight': 0.3,                    # 30% - Social proof
+    'rating_weight': 0.4,                    # 40% - Quality indicator
+    'view_weight': 0.3,                      # 30% - Popularity signal
+    
+    # Recommendation Limits
+    'trending_days': 7,                      # Last 7 days for trending
+    'trending_limit': 10,                    # Return 10 trending items
+    'popular_limit': 10,                     # Return 10 popular items
+    'similar_limit': 5,                      # Return 5 similar products
+    'personalized_limit': 10,                # Return 10 personalized recommendations
+}
