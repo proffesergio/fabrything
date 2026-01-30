@@ -1,0 +1,196 @@
+/**
+ * Recommendations Styling
+ * Animations and layouts for recommendation components
+ */
+
+/* Recommendation Card Animations */
+.recommendation-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+
+.recommendation-card:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-8px);
+}
+
+.recommendation-card .card-img-top {
+  transition: transform 0.3s ease;
+  object-fit: cover;
+}
+
+.recommendation-card:hover .card-img-top {
+  transform: scale(1.05);
+}
+
+/* Discount Badge Animation */
+.recommendation-card .badge {
+  animation: badgePulse 0.5s ease-out;
+}
+
+@keyframes badgePulse {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Stars Animation */
+.recommendation-card .text-warning {
+  animation: starsSlideIn 0.4s ease-out 0.2s both;
+}
+
+@keyframes starsSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Button Animations */
+.recommendation-card .btn {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.recommendation-card .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.recommendation-card .btn:active {
+  transform: translateY(0);
+}
+
+/* Carousel Section */
+.recommendation-carousel-section {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.recommendation-carousel-section h3 {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Grid Section */
+.recommendation-grid-section {
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .recommendation-card .card-body {
+    padding: 0.75rem;
+  }
+
+  .recommendation-card .card-title {
+    font-size: 0.875rem;
+  }
+
+  .recommendation-card .btn {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recommendation-carousel-section h3 {
+    font-size: 1.25rem;
+  }
+
+  .recommendation-card {
+    min-width: 160px;
+  }
+
+  .carousel-arrow {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .recommendation-carousel-section {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+
+  .recommendation-card {
+    background-color: #2d2d2d;
+    color: #fff;
+  }
+
+  .carousel-arrow {
+    background: rgba(45, 45, 45, 0.9);
+    color: #fff;
+  }
+
+  .skeleton-card {
+    background: #3d3d3d;
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      #3d3d3d 25%,
+      #4d4d4d 50%,
+      #3d3d3d 75%
+    );
+  }
+}
+
+/* Accessibility */
+.recommendation-card:focus-within {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+.carousel-arrow:focus {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+  .recommendation-carousel-section,
+  .recommendation-grid-section,
+  .carousel-arrow,
+  .btn {
+    display: none;
+  }
+}

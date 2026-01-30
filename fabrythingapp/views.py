@@ -19,7 +19,8 @@ from fabrythingapp.models import (
 from fabrythingapp.serializers import (
     ProductSerializer, ProductDetailSerializer, CategorySerializer,
     BrandSerializer, ProductReviewSerializer, CartOrderSerializer,
-    CartOrderItemsSerializer, WishlistSerializer, AddressSerializer
+    CartOrderItemsSerializer, WishlistSerializer, AddressSerializer,
+    UserPreferencesSerializer
 )
 from fabrythingapp.services import ProductService, ReviewService, CartService
 
@@ -411,5 +412,462 @@ def filter_products(request):
     data = render_to_string("core/async/product-list.html", {"products":products})
 
     return JsonResponse({"data": data})
+
+# ============================================================================
+# RECOMMENDATION VIEWSETS
+# ============================================================================
+
+from rest_framework.response import Response
+from datetime import timedelta
+from django.utils import timezone
+
+class RecommendationViewSet(viewsets.ViewSet):
+    """
+    ViewSet for product recommendations.
+    
+    Endpoints:
+    - GET /api/v1/recommendations/personalized/ - Personalized for authenticated user
+    - GET /api/v1/recommendations/trending/ - 7-day trending products
+    - GET /api/v1/recommendations/popular/ - All-time popular products
+    
+    All endpoints support:
+    - ?limit=10 - Number of products to return
+    - ?page=1 - Pagination
+    - Cache-Control headers for browser caching
+    """
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
+    def personalized(self, request):
+        """
+        Get personalized recommendations for authenticated user.
+        
+        Returns products based on user's behavioral segment:
+        - new_user: Popular products
+        - active_user: Popular in favorite categories
+        - frequent_buyer: New + trending in categories
+        - dormant_user: Best-sellers + discounted items
+        
+        Query params:
+        - ?limit=10 - Number of products
+        - ?page=1 - Pagination page
+        
+        Response: 3-hour cache (user behavior evolves)
+        """
+        limit = request.query_params.get('limit', 10)
+        
+        try:
+            # Get personalized recommendations using service
+            products = RecommendationService.get_personalized_recommendations(
+                user_id=request.user.id,
+                limit=int(limit),
+                use_cache=True
+            )
+            
+            # Get user segment for display
+            segment = AnalyticsService.get_user_segment(request.user.id)
+            
+            # Serialize
+            serializer = RecommendationProductSerializer(
+                products,
+                many=True,
+                context={'request': request}
+            )
+            
+            # Add caching headers
+            response_data = {
+                'products': serializer.data,
+                'user_segment': segment,
+                'total_count': len(serializer.data),
+                'cached': False,  # Could track from service if needed
+                'cache_expires_in_minutes': 180  # 3 hours
+            }
+            
+            response = Response(response_data)
+            response['Cache-Control'] = 'private, max-age=10800'  # 3 hours
+            
+            logger.info(f"Returned {len(serializer.data)} personalized recommendations for user {request.user.id}")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating personalized recommendations: {str(e)}")
+            return Response(
+                {'detail': 'Error generating recommendations'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def trending(self, request):
+        """
+        Get trending products (last 7 days).
+        
+        Trending = Products with high recent engagement
+        (views, reviews, sales)
+        
+        Response: 6-hour cache (changes daily)
+        """
+        limit = request.query_params.get('limit', 10)
+        
+        try:
+            products = RecommendationService.get_trending_products(
+                limit=int(limit),
+                use_cache=True
+            )
+            
+            serializer = RecommendationProductSerializer(
+                products,
+                many=True,
+                context={'request': request}
+            )
+            
+            response_data = {
+                'products': serializer.data,
+                'total_count': len(serializer.data),
+                'period_days': 7,
+                'cache_expires_in_minutes': 360  # 6 hours
+            }
+            
+            response = Response(response_data)
+            response['Cache-Control'] = 'public, max-age=21600'  # 6 hours
+            
+            logger.info(f"Returned {len(serializer.data)} trending products")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating trending recommendations: {str(e)}")
+            return Response(
+                {'detail': 'Error generating trending products'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+    
+    @action(detail=False, methods=['get'])
+    def popular(self, request):
+        """
+        Get all-time popular products.
+        
+        Popular = Highest rated + most reviewed products
+        
+        Query params:
+        - ?category=cat123 - Filter by category (optional)
+        - ?limit=10 - Number of products
+        
+        Response: 24-hour cache (very stable data)
+        """
+        limit = request.query_params.get('limit', 10)
+        category_id = request.query_params.get('category', None)
+        
+        try:
+            if category_id:
+                products = AnalyticsService.get_popular_products_by_category(
+                    category_id=category_id,
+                    limit=int(limit)
+                )
+            else:
+                products = RecommendationService.get_popular_products(
+                    limit=int(limit),
+                    use_cache=True
+                )
+            
+            serializer = RecommendationProductSerializer(
+                products,
+                many=True,
+                context={'request': request}
+            )
+            
+            response_data = {
+                'products': serializer.data,
+                'total_count': len(serializer.data),
+                'cache_expires_in_minutes': 1440  # 24 hours
+            }
+            
+            response = Response(response_data)
+            response['Cache-Control'] = 'public, max-age=86400'  # 24 hours
+            
+            logger.info(f"Returned {len(serializer.data)} popular products")
+            return response
+            
+        except Exception as e:
+            logger.error(f"Error generating popular recommendations: {str(e)}")
+            return Response(
+                {'detail': 'Error generating popular products'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class SimilarProductsViewSet(viewsets.ViewSet):
+    """
+    ViewSet for similar product discovery.
+    
+    Endpoint:
+    - GET /api/v1/products/{pid}/similar/ - Content-based similar products
+    """
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    @action(detail=False, methods=['get'], url_path='similar/(?P<product_id>[^/.]+)')
+    def similar(self, request, product_id=None):
+        """
+        Get products similar to given product.
+        
+        Similarity based on:
+        1. Same category (primary)
+        2. Similar price (±20%)
+        3. High ratings/reviews preferred
+        
+        Query params:
+        - ?limit=5 - Number of similar products
+        
+        Response: 3-hour cache
+        """
+        limit = request.query_params.get('limit', 5)
+        
+        try:
+            products = RecommendationService.get_similar_products(
+                product_id=product_id,
+                limit=int(limit)
+            )
+            
+            serializer = RecommendationProductSerializer(
+                products,
+                many=True,
+                context={'request': request}
+            )
+            
+            response_data = {
+                'products': serializer.data,
+                'total_count': len(serializer.data),
+                'cache_expires_in_minutes': 180
+            }
+            
+            response = Response(response_data)
+            response['Cache-Control'] = 'private, max-age=10800'
+            
+            logger.info(f"Returned {len(serializer.data)} similar products for {product_id}")
+            return response
+            
+        except Product.DoesNotExist:
+            return Response(
+                {'detail': 'Product not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error generating similar products: {str(e)}")
+            return Response(
+                {'detail': 'Error generating similar products'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class UserPreferenceViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing user preferences.
+    
+    Endpoints:
+    - GET /api/v1/user/preferences/ - Get user preferences
+    - PUT /api/v1/user/preferences/ - Update preferences
+    - POST /api/v1/user/preferences/add_category/ - Add favorite category
+    - POST /api/v1/user/preferences/remove_category/ - Remove favorite category
+    - POST /api/v1/user/preferences/add_brand/ - Add favorite brand
+    - POST /api/v1/user/preferences/remove_brand/ - Remove favorite brand
+    """
+    
+    serializer_class = UserPreferencesSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        """Get or create preferences for authenticated user"""
+        preferences, created = UserPreferences.objects.get_or_create(
+            user=self.request.user
+        )
+        return preferences
+    
+    def get_queryset(self):
+        """Return empty queryset - we use get_object() instead"""
+        return UserPreferences.objects.none()
+    
+    def list(self, request, *args, **kwargs):
+        """Get user preferences"""
+        preferences = self.get_object()
+        serializer = self.get_serializer(preferences)
+        return Response(serializer.data)
+    
+    def update(self, request, *args, **kwargs):
+        """Update user preferences"""
+        preferences = self.get_object()
+        serializer = self.get_serializer(
+            preferences,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            logger.info(f"Updated preferences for user {request.user.id}")
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=False, methods=['post'])
+    def add_category(self, request):
+        """Add category to preferences"""
+        category_id = request.data.get('category_id')
+        if not category_id:
+            return Response(
+                {'detail': 'category_id required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            UserPreferenceService.add_preferred_category(
+                request.user.id,
+                category_id
+            )
+            preferences = self.get_object()
+            serializer = self.get_serializer(preferences)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['post'])
+    def remove_category(self, request):
+        """Remove category from preferences"""
+        category_id = request.data.get('category_id')
+        if not category_id:
+            return Response(
+                {'detail': 'category_id required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        UserPreferenceService.remove_preferred_category(
+            request.user.id,
+            category_id
+        )
+        preferences = self.get_object()
+        serializer = self.get_serializer(preferences)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def add_brand(self, request):
+        """Add brand to preferences"""
+        brand_id = request.data.get('brand_id')
+        if not brand_id:
+            return Response(
+                {'detail': 'brand_id required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            UserPreferenceService.add_preferred_brand(
+                request.user.id,
+                brand_id
+            )
+            preferences = self.get_object()
+            serializer = self.get_serializer(preferences)
+            return Response(serializer.data)
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['post'])
+    def remove_brand(self, request):
+        """Remove brand from preferences"""
+        brand_id = request.data.get('brand_id')
+        if not brand_id:
+            return Response(
+                {'detail': 'brand_id required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        UserPreferenceService.remove_preferred_brand(request.user.id, brand_id)
+        preferences = self.get_object()
+        serializer = self.get_serializer(preferences)
+        return Response(serializer.data)
+
+
+class ProductViewTrackingViewSet(viewsets.ViewSet):
+    """
+    Track product views for analytics and recommendations.
+    
+    Endpoint:
+    - POST /api/v1/products/{pid}/view/ - Track a product view
+    """
+    
+    permission_classes = [IsAuthenticated]
+    
+    @action(detail=False, methods=['post'], url_path='view/(?P<product_id>[^/.]+)')
+    def track_view(self, request, product_id=None):
+        """
+        Track that user viewed a product.
+        
+        Called from frontend when product detail page loads.
+        Used for:
+        - Popularity scoring
+        - Trending calculations
+        - User behavior analysis
+        
+        Response: 204 No Content (successful tracking)
+        """
+        try:
+            product = Product.objects.get(pid=product_id)
+            ProductService.track_product_view(request.user, product)
+            
+            logger.debug(f"Tracked view: user {request.user.id} viewed product {product_id}")
+            return Response(status=status.HTTP_204_NO_CONTENT)
+            
+        except Product.DoesNotExist:
+            return Response(
+                {'detail': 'Product not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.error(f"Error tracking product view: {str(e)}")
+            # Don't fail the main request if tracking fails
+            return Response(
+                {'detail': 'View tracked with errors'},
+                status=status.HTTP_200_OK
+            )
+
+
+class ProductFilterFacetsViewSet(viewsets.ViewSet):
+    """
+    Get available filter options for product discovery.
+    
+    Endpoint:
+    - GET /api/v1/products/facets/ - Get filter facets with counts
+    """
+    
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    
+    @action(detail=False, methods=['get'])
+    def facets(self, request):
+        """
+        Get available categories, brands, and price ranges with product counts.
+        
+        Used by frontend to build filter UI (sidebar, dropdowns).
+        
+        Response example:
+        {
+            "categories": [
+                {"cid": "cat1", "title": "Men", "product_count": 45},
+                ...
+            ],
+            "brands": [...],
+            "price_ranges": [...]
+        }
+        
+        Response: 12-hour cache (counts relatively stable)
+        """
+        serializer = ProductFilterFacetsSerializer({})
+        data = serializer.data
+        
+        response = Response(data)
+        response['Cache-Control'] = 'public, max-age=43200'  # 12 hours
+        
+        logger.debug("Returned product filter facets")
+        return response
 
 

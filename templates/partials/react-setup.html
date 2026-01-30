@@ -1,0 +1,14 @@
+<!-- React Setup - Include before React components -->
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+
+<script>
+  // Make React and ReactDOM global
+  window.React = React;
+  window.ReactDOM = ReactDOM;
+  window.FramerMotion = FramerMotion;
+  
+  console.log('[React] Setup complete - React ' + React.version);
+</script>

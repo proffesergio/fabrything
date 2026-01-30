@@ -1331,6 +1331,134 @@
             </div><!-- End .bg-white -->
         </div><!-- End .cta -->
     </div><!-- End .container -->
+
+    <!-- Trending Products Section (React Component) -->
+    <section id="trending-recommendations" class="trending-section py-5 bg-light"></section>
+
+    <!-- Include React, Framer Motion, and our app -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/framer-motion@10/dist/framer-motion.js"></script>
+    <script src="{% static 'js/react/hooks/useMediaQuery.js' %}"></script>
+    <script src="{% static 'js/react/hooks/useRecommendations.js' %}"></script>
+    <script src="{% static 'js/react/hooks/useCart.js' %}"></script>
+    <script src="{% static 'js/react/components/RecommendationCard.jsx' %}"></script>
+    <script src="{% static 'js/react/components/RecommendationCarousel.jsx' %}"></script>
+    <script src="{% static 'js/react/components/RecommendationGrid.jsx' %}"></script>
+    <script src="{% static 'js/react/App.jsx' %}"></script>
+
+    <script>
+      // Initialize React recommendations on homepage
+      document.addEventListener('DOMContentLoaded', () => {
+        const root = ReactDOM.createRoot(document.getElementById('trending-recommendations'));
+        root.render(
+          React.createElement(RecommendationApp, {
+            initialType: 'trending',
+            sectionTitle: '🔥 Trending Now'
+          })
+        );
+
+        // If user is authenticated, also show personalized recommendations
+        const isAuthenticated = {{ request.user.is_authenticated|lower }};
+        if (isAuthenticated) {
+          const personalizedSection = document.createElement('section');
+          personalizedSection.id = 'personalized-recommendations';
+          personalizedSection.className = 'personalized-section py-5';
+          document.querySelector('.trending-section').parentElement.insertAdjacentElement('afterend', personalizedSection);
+
+          const root2 = ReactDOM.createRoot(personalizedSection);
+          root2.render(
+            React.createElement(RecommendationApp, {
+              initialType: 'personalized',
+              sectionTitle: '💡 Recommended for You'
+            })
+          );
+        }
+      });
+    </script>
+
+    <!-- CSS for skeleton loaders and animations -->
+    <style>
+      .skeleton-card {
+        background: #f0f0f0;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .skeleton {
+        background: linear-gradient(
+          90deg,
+          #f0f0f0 25%,
+          #e0e0e0 50%,
+          #f0f0f0 75%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+      }
+
+      @keyframes skeleton-loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      .carousel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: background-color 0.3s;
+      }
+
+      .carousel-arrow:hover {
+        background-color: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+
+      .carousel-arrow-left {
+        left: 10px;
+      }
+
+      .carousel-arrow-right {
+        right: 10px;
+      }
+
+      .products-scroll-container::-webkit-scrollbar {
+        height: 6px;
+      }
+
+      .products-scroll-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      .products-scroll-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+      }
+
+      .products-scroll-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+
+      /* Object-fit polyfill for older browsers */
+      .object-fit-cover {
+        object-fit: cover;
+      }
+    </style>
 </main><!-- End .main -->
 
 {% endblock content %}

@@ -779,4 +779,114 @@ $(document).ready(function () {
             }, 500)
         }, 10000)
     }
+
+    /**
+     * Recommendation Features Integration
+     */
+
+    (function() {
+      'use strict';
+
+      // Initialize JWT token handling
+      window.APIClient = {
+        getToken() {
+          return localStorage.getItem('access_token');
+        },
+
+        setToken(access, refresh) {
+          localStorage.setItem('access_token', access);
+          localStorage.setItem('refresh_token', refresh);
+        },
+
+        clearAuth() {
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+        },
+
+        async fetchWithAuth(url, options = {}) {
+          const token = this.getToken();
+          
+          const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers,
+          };
+
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          let response = await fetch(url, {
+            ...options,
+            headers,
+          });
+
+          // Handle token expiration
+          if (response.status === 401 && token) {
+            const refreshed = await this.refreshToken();
+            if (refreshed) {
+              // Retry original request
+              response = await fetch(url, {
+                ...options,
+                headers: {
+                  ...headers,
+                  'Authorization': `Bearer ${this.getToken()}`,
+                },
+              });
+            }
+          }
+
+          return response;
+        },
+
+        async refreshToken() {
+          const refreshToken = localStorage.getItem('refresh_token');
+          if (!refreshToken) return false;
+
+          try {
+            const response = await fetch('/api/v1/auth/refresh/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ refresh: refreshToken }),
+            });
+
+            if (response.ok) {
+              const { access } = await response.json();
+              localStorage.setItem('access_token', access);
+              return true;
+            }
+          } catch (error) {
+            console.error('Token refresh failed:', error);
+          }
+
+          return false;
+        },
+      };
+
+      // Track product views on page load
+      if (document.querySelector('[data-product-id]')) {
+        const productId = document.querySelector('[data-product-id]').dataset.productId;
+        const token = window.APIClient.getToken();
+
+        if (token) {
+          window.APIClient.fetchWithAuth(`/api/v1/products/${productId}/view/`, {
+            method: 'POST',
+          })
+            .then(response => {
+              if (response.ok) {
+                console.log('[Analytics] Product view tracked');
+              }
+            })
+            .catch(error => console.error('[Analytics] View tracking error:', error));
+        }
+      }
+
+      // Handle logout - clear JWT tokens
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('[data-logout]')) {
+          window.APIClient.clearAuth();
+        }
+      });
+
+      console.log('[Recommendations] Module loaded');
+    })();
 });

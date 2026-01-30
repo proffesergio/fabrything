@@ -320,7 +320,8 @@
                 <aside class="col-xl-2 d-md-none d-xl-block">
                     <div class="sidebar sidebar-product">
                         <div class="widget widget-products">
-                            <h4 class="widget-title">Related Product</h4><!-- End .widget-title -->
+                            <h4 class="widget-title">Similar Product</h4><!-- End .widget-title -->
+                            
                             {% for product in related_products %}
                             <div class="products">
                                 <div class="product product-sm">
@@ -340,6 +341,9 @@
                                 </div><!-- End .product product-sm -->
                             </div><!-- End .products -->
                             {% endfor %}
+
+                            <!-- Add this where you want similar products to appear -->
+                            <section id="similar-products" class="similar-products py-5 bg-light"></section>
 
                             <a href="{% url 'fabrythingapp:category-products' product.category.cid %}" class="btn btn-outline-dark-3"><span>View More Products</span><i class="icon-long-arrow-right"></i></a>
                         </div><!-- End .widget widget-products -->
@@ -410,4 +414,41 @@
         </div><!-- End .container-fluid -->
     </div><!-- End .page-content -->
 </main><!-- End .main -->
+<!-- Track product view for analytics -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const productId = '{{ product.pid }}';
+    const token = localStorage.getItem('access_token');
+
+    // Only track if user is authenticated
+    if (token) {
+      fetch(`/api/v1/products/${productId}/view/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (response.ok) {
+            console.log('Product view tracked');
+          }
+        })
+        .catch(error => console.error('Error tracking product view:', error));
+    }
+
+    // Initialize similar products recommendation
+    const similarSection = document.getElementById('similar-products');
+    if (similarSection && window.React && window.ReactDOM) {
+      const root = window.ReactDOM.createRoot(similarSection);
+      root.render(
+        window.React.createElement(RecommendationApp, {
+          productId: productId,
+          initialType: 'similar',
+          sectionTitle: 'You Might Also Like'
+        })
+      );
+    }
+  });
+</script>
 {% endblock %}
