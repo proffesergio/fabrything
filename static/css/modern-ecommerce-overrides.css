@@ -1,0 +1,424 @@
+/**
+ * Modern Ecommerce Design Overrides
+ * Improves product card typography and layout consistency
+ * This file should be loaded AFTER style.css to override default styles
+ */
+
+/* ===== PRODUCT CARD TITLE SIZING ===== */
+
+/* Product cards on homepage and category pages */
+.product .product-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #1a1a1a;
+    margin: 8px 0;
+    min-height: 32px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product .product-title a {
+    color: #1a1a1a;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.product .product-title a:hover {
+    color: #ff6b6b;
+}
+
+/* Mobile product titles */
+@media (max-width: 768px) {
+    .product .product-title {
+        font-size: 13px;
+        min-height: 28px;
+    }
+}
+
+/* ===== PRODUCT CARD BODY STYLING ===== */
+
+.product-body {
+    padding: 12px 10px;
+    text-align: center;
+}
+
+/* ===== PRODUCT PRICE STYLING ===== */
+
+.product-price {
+    font-size: 15px;
+    color: #ff6b6b;
+    font-weight: 700;
+    margin: 8px 0;
+}
+
+.product-price .new-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ff6b6b;
+}
+
+.product-price .old-price {
+    font-size: 12px;
+    color: #999;
+    margin-left: 8px;
+    text-decoration: line-through;
+}
+
+/* ===== RATINGS STYLING ===== */
+
+.product .ratings-container {
+    font-size: 12px;
+    margin: 6px 0;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.product .ratings {
+    height: 14px;
+    width: 70px;
+    background: #e0e0e0;
+}
+
+.product .ratings-val {
+    background: linear-gradient(90deg, #ffc107, #ff9800);
+    height: 100%;
+    transition: width 0.3s;
+}
+
+.product .ratings-text {
+    color: #666;
+    font-size: 12px;
+}
+
+/* ===== PRODUCT ACTION BUTTONS ===== */
+
+.product-action {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f0f0f0;
+}
+
+.product-action .btn-product {
+    font-size: 13px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.product-action .btn-product:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+}
+
+.product-action .btn-product span {
+    text-transform: capitalize;
+    font-weight: 600;
+}
+
+/* ===== PRODUCT MEDIA (IMAGES) ===== */
+
+.product-media {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    aspect-ratio: 1;
+    background: #f8f9fa;
+    margin-bottom: 10px;
+}
+
+.product-media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.product-media:hover img.product-image {
+    opacity: 0;
+}
+
+.product-media:hover img.product-image-hover {
+    opacity: 1;
+}
+
+.product-image-hover {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+/* Sale badge */
+.product-label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #ff6b6b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    z-index: 1;
+}
+
+/* ===== MODERN CARD SHADOWS ===== */
+
+.product {
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.product:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
+}
+
+/* ===== FEATURED PRODUCTS SECTION ===== */
+
+.featured .heading h2 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+.featured .nav-link {
+    font-size: 14px;
+    font-weight: 600;
+    color: #666;
+    padding: 10px 20px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.featured .nav-link.active {
+    background: #ff6b6b;
+    color: white;
+}
+
+.featured .nav-link:hover {
+    color: #ff6b6b;
+    background: #f8f9fa;
+}
+
+/* ===== TAB CONTENT STYLING ===== */
+
+.tab-content-carousel {
+    padding: 20px 0;
+}
+
+/* ===== ICON BOXES ===== */
+
+.icon-box-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 8px;
+}
+
+.icon-box-content p {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+}
+
+/* ===== BANNER STYLING ===== */
+
+.banner-title {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.banner-subtitle {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* ===== RESPONSIVE OPTIMIZATIONS ===== */
+
+@media (max-width: 991px) {
+    .product .product-title {
+        font-size: 13px;
+    }
+
+    .banner-title {
+        font-size: 24px;
+    }
+
+    .featured .heading h2 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .product .product-title {
+        font-size: 12px;
+        min-height: 24px;
+    }
+
+    .product-price {
+        font-size: 14px;
+    }
+
+    .product-action .btn-product {
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+
+    .product-body {
+        padding: 10px 8px;
+    }
+
+    .product-media {
+        margin-bottom: 8px;
+    }
+
+    .banner-title {
+        font-size: 18px;
+    }
+
+    .featured .heading h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product .product-title {
+        font-size: 11px;
+        -webkit-line-clamp: 1;
+        min-height: 20px;
+    }
+
+    .product-price {
+        font-size: 13px;
+    }
+
+    .product-action .btn-product {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .product-body {
+        padding: 8px 6px;
+    }
+
+    .banner-title {
+        font-size: 16px;
+    }
+
+    .featured .heading h2 {
+        font-size: 18px;
+    }
+}
+
+/* ===== CART DROPDOWN PRODUCT CARDS ===== */
+
+.cart-dropdown .product-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+.cart-dropdown .product-title a:hover {
+    color: #ff6b6b;
+}
+
+/* ===== PRODUCT COMPARISON ===== */
+
+.compare-product-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.compare-product-title a {
+    color: #1a1a1a;
+}
+
+.compare-product-title a:hover {
+    color: #ff6b6b;
+}
+
+/* ===== WISHLIST STYLING ===== */
+
+.wishlist-item .product-title {
+    font-size: 14px;
+}
+
+/* ===== QUICK VIEW STYLING ===== */
+
+.quickView-content .product-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+/* ===== MODERN TRANSITIONS ===== */
+
+.product,
+.product-media,
+.product-action,
+.btn-product,
+.icon-box,
+.banner {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===== CATEGORY & FILTER SECTION ===== */
+
+.sidebar-toggle-btn {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.category-list .cat-item {
+    font-size: 13px;
+    padding: 8px 0;
+}
+
+.category-list .cat-item a {
+    color: #666;
+    transition: color 0.3s ease;
+}
+
+.category-list .cat-item a:hover,
+.category-list .cat-item.active a {
+    color: #ff6b6b;
+    font-weight: 600;
+}
+
+/* ===== HOVER EFFECTS ===== */
+
+.product-nav-thumbs a {
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.product-nav-thumbs a:hover {
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 12px rgba(255, 107, 107, 0.2);
+}
+
+.product-nav-thumbs a.active {
+    border-color: #ff6b6b;
+    box-shadow: 0 4px 16px rgba(255, 107, 107, 0.3);
+}

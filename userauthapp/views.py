@@ -36,7 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return User.objects.all()
     
-    @action(detail=False, methods=['post'], permission_classes=[AllowAny])
+    @action(detail=False, methods=['POST'], permission_classes=[AllowAny])
     def register(self, request):
         """Register new user"""
         serializer = UserRegistrationSerializer(data=request.data)
@@ -49,13 +49,13 @@ class UserViewSet(viewsets.ModelViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=False, methods=['get'])
+    @action(detail=False, methods=['GET'])
     def me(self, request):
         """Get current user details"""
         serializer = self.get_serializer(request.user)
         return Response(serializer.data)
     
-    @action(detail=False, methods=['put'])
+    @action(detail=False, methods=['PUT'])
     def update_me(self, request):
         """Update current user"""
         serializer = self.get_serializer(

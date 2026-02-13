@@ -21,6 +21,14 @@
     --radius: 8px;
     --transition: all 0.3s ease;
 }
+/* ============================================================================
+   GENERAL STYLING
+   ============================================================================ */
+
+.container-fluid {
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
 /* ============================================================================
  * CART PAGE STYLES
@@ -43,6 +51,92 @@
     margin-bottom: 2rem;
     color: var(--text-dark);
 }
+
+.cart-items-container {
+  animation: slideInUp 0.4s ease-out;
+}
+
+.cart-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: white;
+}
+
+.cart-item:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.cart-item-image {
+  width: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s ease;
+}
+
+.cart-item:hover .cart-item-image {
+  transform: scale(1.05);
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.quantity-controls input {
+  border: none;
+  text-align: center;
+  font-weight: bold;
+}
+
+.quantity-controls button {
+  background: #f5f5f5;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.quantity-controls button:hover {
+  background: #e0e0e0;
+}
+
+.cart-summary {
+  background: white;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 20px;
+}
+
+.price-breakdown {
+  margin: 16px 0;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+}
+
+.price-row strong {
+  font-weight: 600;
+}
+
+.price-total {
+  font-size: 1.5rem;
+  color: #2196f3;
+  font-weight: bold;
+  margin-top: 12px;
+}
+
 
 /* EMPTY CART */
 .cart-page .empty-cart {
@@ -281,6 +375,20 @@
  * CHECKOUT FLOW STYLES
  * ============================================================================ */
 
+/* ============================================================================
+   CHECKOUT PAGE
+   ============================================================================ */
+
+.checkout-page {
+  background: #f9f9f9;
+}
+
+.checkout-header {
+  background: white;
+  padding: 24px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 24px;
+}
 .checkout-flow {
     background-color: var(--bg-light);
     min-height: 100vh;
@@ -294,6 +402,52 @@
 }
 
 /* STEP INDICATOR */
+
+.step {
+  text-align: center;
+  flex: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.step-number.active {
+  background: #2196f3;
+  color: white;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.step-number.completed {
+  background: #4caf50;
+  color: white;
+}
+
+.step-number.pending {
+  background: #f0f0f0;
+  color: #999;
+}
+
+.step-label {
+  font-size: 0.875rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.step-number.active ~ .step-label {
+  color: #2196f3;
+  font-weight: 600;
+}
+
 .step-indicator {
     display: flex;
     justify-content: space-between;
@@ -362,7 +516,38 @@
 }
 
 /* ADDRESS SELECTION */
+.address-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.address-card:hover {
+  border-color: #2196f3;
+  background: #f0f8ff;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.address-card.selected {
+  border-color: #2196f3;
+  background: #f0f8ff;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.address-card input[type="radio"] {
+  cursor: pointer;
+  margin-right: 12px;
+}
+
+.address-info {
+  margin-left: 32px;
+}
+
 .step-1-addresses {
+    margin-bottom: 2rem;
 }
 
 .step-1-addresses .existing-addresses {
@@ -464,6 +649,157 @@
 .btn-add-address:hover {
     background-color: #45b8ad;
 }
+
+.shipping-card {
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.shipping-card:hover {
+  border-color: #2196f3;
+  background: #f0f8ff;
+}
+
+.shipping-card.selected {
+  border-color: #2196f3;
+  background: #f0f8ff;
+}
+
+.shipping-method-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.shipping-delivery-days {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.shipping-cost {
+  font-weight: bold;
+  color: #2196f3;
+  font-size: 1.1rem;
+}
+
+/* ============================================================================
+   ORDER CONFIRMATION PAGE
+   ============================================================================ */
+
+.confirmation-success {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  padding: 48px 24px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 32px;
+  animation: slideInDown 0.5s ease-out;
+}
+
+.confirmation-success h2 {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+.order-id-display {
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 12px;
+}
+
+.timeline {
+  position: relative;
+  padding: 20px 0;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 24px;
+  position: relative;
+}
+
+.timeline-marker {
+  position: relative;
+  width: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.timeline-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2196f3;
+  box-shadow: 0 0 0 4px #f0f8ff;
+  z-index: 2;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 20px;
+  top: 40px;
+  bottom: -24px;
+  width: 2px;
+  background: #e0e0e0;
+}
+
+.timeline-content {
+  margin-left: 20px;
+  padding-top: 2px;
+}
+
+.timeline-content h6 {
+  margin-bottom: 4px;
+  font-weight: 600;
+  color: #333;
+}
+
+.timeline-content .text-muted {
+  font-size: 0.875rem;
+}
+
+/* ============================================================================
+   BUTTONS & INTERACTIONS
+   ============================================================================ */
+
+.btn-checkout {
+  background: #2196f3;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.btn-checkout:hover {
+  background: #1976d2;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(33, 150, 243, 0.3);
+}
+
+.btn-checkout:active {
+  transform: translateY(0);
+}
+
+.btn-checkout:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
 
 /* SHIPPING METHOD */
 .step-2-shipping .shipping-options {
@@ -654,6 +990,176 @@
 }
 
 /* ============================================================================
+   MOBILE RESPONSIVE DESIGN
+   ============================================================================ */
+
+@media (max-width: 768px) {
+  /* Cart */
+  .cart-item {
+    margin-bottom: 16px;
+  }
+
+  .cart-item-image {
+    max-height: 100px;
+  }
+
+  .cart-summary {
+    position: static;
+    margin-top: 24px;
+  }
+
+  /* Checkout */
+  .step-indicator {
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 0.875rem;
+  }
+
+  .step-label {
+    font-size: 0.75rem;
+  }
+
+  /* Order confirmation */
+  .confirmation-success h2 {
+    font-size: 1.5rem;
+  }
+
+  .timeline-marker {
+    width: 30px;
+  }
+
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+  }
+
+  .timeline-content {
+    margin-left: 16px;
+  }
+
+  /* Forms */
+  .address-info {
+    margin-left: 28px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Cart */
+  .container py-4 {
+    padding: 12px;
+  }
+
+  .cart-summary {
+    margin-top: 16px;
+    padding: 16px;
+  }
+
+  /* Checkout */
+  .checkout-header {
+    padding: 16px;
+  }
+
+  .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .btn-checkout {
+    padding: 10px 16px;
+    font-size: 0.875rem;
+  }
+
+  /* Confirmation */
+  .confirmation-success {
+    padding: 32px 16px;
+  }
+
+  .confirmation-success h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ============================================================================
+   DARK MODE SUPPORT
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .cart-page {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  }
+
+  .cart-item,
+  .cart-summary,
+  .checkout-header,
+  .card {
+    background: #2d2d2d;
+    color: #fff;
+    border-color: #444;
+  }
+
+  .address-card:hover,
+  .shipping-card:hover {
+    background: rgba(33, 150, 243, 0.1);
+  }
+
+  .timeline-dot {
+    background: #64b5f6;
+  }
+
+  .timeline-item:not(:last-child)::before {
+    background: #444;
+  }
+
+  .price-row {
+    color: #ccc;
+  }
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.space-y-3 > * + * {
+  margin-top: 12px;
+}
+
+.sticky-top {
+  position: sticky;
+  top: 20px;
+  z-index: 10;
+}
+
+/* Print Styles */
+@media print {
+  .btn-checkout,
+  .btn,
+  .step-indicator,
+  .checkout-sidebar {
+    display: none !important;
+  }
+
+  .confirmation-success {
+    border: 2px solid #333;
+    background: white !important;
+    color: #333 !important;
+  }
+
+  .card {
+    page-break-inside: avoid;
+  }
+}
+/* ============================================================================
  * ANIMATIONS
  * ============================================================================ */
 
@@ -686,6 +1192,61 @@
 .step-content {
     animation: slideInFromRight 0.3s ease;
 }
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
 
 /* ============================================================================
  * RESPONSIVE DESIGN

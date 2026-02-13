@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from fabrythingapp.models import (
-    Product, Category, Brand, ProductReview, 
-    CartOrder, CartOrderItems, UserPreferences, Wishlist, Address, ProductImages
+    Cart, CartItem, OrderNotification, OrderStatus, Product, Category, Brand, ProductReview, 
+    CartOrder, CartOrderItems, ShippingMethod, UserPreferences, Wishlist, Address, ProductImages
 )
 from userauthapp.models import User
 
@@ -82,30 +82,30 @@ class ProductReviewSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ['id', 'user', 'date']
 
-class CartOrderItemsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CartOrderItems
-        fields = [
-            'id', 'order', 'invoice', 'product_status',
-            'item', 'image', 'quantity', 'price', 'total'
-        ]
-        read_only_fields = ['id', 'invoice', 'total']
+# class CartOrderItemsSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CartOrderItems
+#         fields = [
+#             'id', 'order', 'invoice', 'product_status',
+#             'item', 'image', 'quantity', 'price', 'total'
+#         ]
+#         read_only_fields = ['id', 'invoice', 'total']
 
-class CartOrderSerializer(serializers.ModelSerializer):
-    items = CartOrderItemsSerializer(
-        source='cartorderitems_set',
-        many=True,
-        read_only=True
-    )
-    user_email = serializers.EmailField(source='user.email', read_only=True)
+# class CartOrderSerializer(serializers.ModelSerializer):
+#     items = CartOrderItemsSerializer(
+#         source='cartorderitems_set',
+#         many=True,
+#         read_only=True
+#     )
+#     user_email = serializers.EmailField(source='user.email', read_only=True)
     
-    class Meta:
-        model = CartOrder
-        fields = [
-            'id', 'user', 'user_email', 'price', 'paid_status',
-            'order_date', 'product_status', 'items'
-        ]
-        read_only_fields = ['id', 'order_date']
+#     class Meta:
+#         model = CartOrder
+#         fields = [
+#             'id', 'user', 'user_email', 'price', 'paid_status',
+#             'order_date', 'product_status', 'items'
+#         ]
+#         read_only_fields = ['id', 'order_date']
 
 class WishlistSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
@@ -116,11 +116,11 @@ class WishlistSerializer(serializers.ModelSerializer):
         fields = ['id', 'product', 'product_id', 'date']
         read_only_fields = ['id', 'date']
 
-class AddressSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Address
-        fields = ['id', 'user', 'address', 'status']
-        read_only_fields = ['id', 'user']
+# class AddressSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Address
+#         fields = ['id', 'user', 'address', 'status']
+#         read_only_fields = ['id', 'user']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -334,3 +334,335 @@ class ProductFilterFacetsSerializer(serializers.Serializer):
                 'count': count
             })
         return result
+    
+# ============================================================================
+#
+# ============================================================================
+# ============================================================================
+# CART & CHECKOUT SERIALIZERS  
+# ============================================================================
+
+class CartItemSerializer(serializers.ModelSerializer):
+    """Serializer for shopping cart items"""
+    product_title = serializers.CharField(
+        source='product.title',
+        read_only=True
+    )
+    product_image = serializers.CharField(
+        source='product.image',
+        read_only=True
+    )
+    product_price = serializers.DecimalField(
+        source='product.price',
+        max_digits=12,
+        decimal_places=2,
+        read_only=True
+    )
+    total_price = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = CartItem
+        fields = [
+            'id',
+            'product',
+            'product_title',
+            'product_image',
+            'product_price',
+            'size',
+            'color',
+            'quantity',
+            'total_price',
+        ]
+    
+    def get_total_price(self, obj):
+        return str(obj.total_price)
+
+class CartSerializer(serializers.ModelSerializer):
+    """Serializer for shopping cart with items"""
+    items = CartItemSerializer(many=True, read_only=True)
+    subtotal = serializers.SerializerMethodField()
+    item_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Cart
+        fields = ['id', 'items', 'subtotal', 'item_count', 'updated_at']
+    
+    def get_subtotal(self, obj):
+        return str(obj.subtotal)
+    
+    def get_item_count(self, obj):
+        return obj.item_count
+
+class ShippingMethodSerializer(serializers.ModelSerializer):
+    """Serializer for shipping methods with cost and delivery time"""
+    class Meta:
+        model = ShippingMethod
+        fields = ['id', 'name', 'cost', 'delivery_days', 'description', 'is_active']
+        read_only_fields = ['id']
+
+class AddressSerializer(serializers.ModelSerializer):
+    """Complete address serializer for checkout and user profile"""
+    country_display = serializers.CharField(source='country', read_only=True)
+    
+    class Meta:
+        model = Address
+        fields = [
+            'id', 'address_type', 'full_name', 'phone_number',
+            'address', 'city', 'state', 'postal_code', 'country',
+            'is_default', 'created_at', 'get_full_address'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def validate_phone_number(self, value):
+        """Validate phone number format"""
+        if not value or len(value) < 10:
+            raise serializers.ValidationError("Invalid phone number")
+        return value
+    
+    def validate_postal_code(self, value):
+        """Validate postal code"""
+        if not value or len(value) < 3:
+            raise serializers.ValidationError("Invalid postal code")
+        return value
+
+class CartOrderItemsSerializer(serializers.ModelSerializer):
+    """Individual cart/order items"""
+    product_pid = serializers.CharField(source='product.pid', read_only=True)
+    product_title = serializers.CharField(source='item', read_only=True)
+    
+    class Meta:
+        model = CartOrderItems
+        fields = [
+            'id', 'product_pid', 'product_title', 'image',
+            'size', 'color', 'quantity', 'price', 'total', 'created_at'
+        ]
+        read_only_fields = ['id', 'total', 'created_at']
+
+class CartOrderSerializer(serializers.ModelSerializer):
+    """
+    Complete cart/order serializer with all details.
+    Used for cart page and order confirmation.
+    """
+    items = CartOrderItemsSerializer(many=True, read_only=True)
+    shipping_method_details = ShippingMethodSerializer(
+        source='shipping_method',
+        read_only=True
+    )
+    shipping_address_details = AddressSerializer(
+        source='shipping_address',
+        read_only=True
+    )
+    payment_method_display = serializers.CharField(
+        source='get_payment_method_display',
+        read_only=True
+    )
+    product_status_display = serializers.CharField(
+        source='get_product_status_display',
+        read_only=True
+    )
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    
+    class Meta:
+        model = CartOrder
+        fields = [
+            'id', 'user', 'user_email', 'items',
+            'subtotal', 'shipping_cost', 'discount_applied', 'taxes', 'price',
+            'payment_method', 'payment_method_display',
+            'shipping_method', 'shipping_method_details',
+            'shipping_address', 'shipping_address_details',
+            'coupon_code', 'notes',
+            'product_status', 'product_status_display',
+            'paid_status', 'order_date', 'created_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'user', 'subtotal', 'taxes', 'order_date',
+            'created_at', 'updated_at'
+        ]
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    """Order status history entry"""
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    
+    class Meta:
+        model = OrderStatus
+        fields = ['id', 'status', 'status_display', 'tracking_number', 'notes', 'created_at']
+        read_only_fields = ['id', 'created_at']
+
+class OrderNotificationSerializer(serializers.ModelSerializer):
+    """Notification tracking"""
+    notification_type_display = serializers.CharField(
+        source='get_notification_type_display',
+        read_only=True
+    )
+    
+    class Meta:
+        model = OrderNotification
+        fields = [
+            'id', 'notification_type', 'notification_type_display',
+            'subject', 'message', 'sent_at', 'is_read'
+        ]
+        read_only_fields = ['id', 'sent_at']
+
+class CheckoutSerializer(serializers.Serializer):
+    """
+    Serializer for checkout data (not a model).
+    Combines order data with user selections.
+    """
+    # Existing cart data
+    cart_id = serializers.IntegerField()
+    
+    # Address selection
+    shipping_address_id = serializers.IntegerField(required=True)
+    
+    # Shipping method
+    shipping_method_id = serializers.IntegerField(required=True)
+    
+    # Payment
+    payment_method = serializers.ChoiceField(
+        choices=[
+            ('cod', 'Cash on Delivery'),
+            ('bkash', 'bKash'),
+            ('nagad', 'Nagad'),
+            ('rocket', 'Rocket'),
+            ('visa', 'Visa Card'),
+            ('mastercard', 'MasterCard'),
+        ]
+    )
+    
+    # Optional
+    coupon_code = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=50
+    )
+    notes = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=500
+    )
+    
+    def validate_shipping_address_id(self, value):
+        """Verify address belongs to user"""
+        request = self.context.get('request')
+        if not request or not request.user:
+            raise serializers.ValidationError("User not authenticated")
+        
+        try:
+            Address.objects.get(id=value, user=request.user)
+        except Address.DoesNotExist:
+            raise serializers.ValidationError("Invalid address")
+        
+        return value
+    
+    def validate_shipping_method_id(self, value):
+        """Verify shipping method exists and is active"""
+        try:
+            method = ShippingMethod.objects.get(id=value, is_active=True)
+        except ShippingMethod.DoesNotExist:
+            raise serializers.ValidationError("Invalid or inactive shipping method")
+        
+        return value
+
+class OrderConfirmationSerializer(serializers.ModelSerializer):
+
+    """Minimal serializer for order confirmation page"""
+    items = CartOrderItemsSerializer(many=True, read_only=True)
+    shipping_address_details = AddressSerializer(
+        source='shipping_address',
+        read_only=True
+    )
+    
+    class Meta:
+        model = CartOrder
+        fields = [
+            'id', 'items', 'price', 'payment_method',
+            'shipping_address_details', 'order_date',
+            'created_at'
+        ]
+        read_only_fields = fields
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    """Serializer for items in an order"""
+    class Meta:
+        model = CartOrderItems
+        fields = [
+            'id',
+            'product_name',
+            'product_price',
+            'size',
+            'color',
+            'quantity',
+            'subtotal',
+        ]
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    """Detailed order serializer with items and status history"""
+    items = OrderItemSerializer(many=True, read_only=True)
+    status_history = OrderStatusSerializer(many=True, read_only=True)
+    shipping_address = AddressSerializer(read_only=True)
+    payment_method_display = serializers.CharField(
+        source='get_payment_method_display',
+        read_only=True
+    )
+    order_status_display = serializers.CharField(
+        source='get_order_status_display',
+        read_only=True
+    )
+    
+    class Meta:
+        model = CartOrder
+        fields = [
+            'id',
+            'order_id',
+            'user',
+            'items',
+            'subtotal',
+            'discount_amount',
+            'shipping_cost',
+            'tax_amount',
+            'total_price',
+            'shipping_address',
+            'payment_method',
+            'payment_method_display',
+            'order_status',
+            'order_status_display',
+            'status_history',
+            'coupon_code',
+            'notes',
+            'paid_status',
+            'created_at',
+            'updated_at',
+        ]
+
+class OrderListSerializer(serializers.ModelSerializer):
+    """Summary order serializer for lists"""
+    items_count = serializers.SerializerMethodField()
+    order_status_display = serializers.CharField(
+        source='get_order_status_display',
+        read_only=True
+    )
+    
+    class Meta:
+        model = CartOrder
+        fields = [
+            'id',
+            'order_id',
+            'total_price',
+            'items_count',
+            'order_status',
+            'order_status_display',
+            'created_at',
+        ]
+    
+    def get_items_count(self, obj):
+        return sum(item.quantity for item in obj.items.all())
+
+class CheckoutFormSerializer(serializers.Serializer):
+    """Validator for checkout form"""
+    shipping_address_id = serializers.IntegerField(required=True)
+    shipping_method_id = serializers.IntegerField(required=True)
+    payment_method = serializers.ChoiceField(
+        choices=['cod', 'bkash', 'nagad', 'rocket', 'visa', 'mastercard', 'stripe']
+    )
+    coupon_code = serializers.CharField(required=False, allow_blank=True)
+    notes = serializers.CharField(required=False, allow_blank=True)

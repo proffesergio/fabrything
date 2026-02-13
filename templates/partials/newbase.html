@@ -53,11 +53,39 @@
     <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
     <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css"> 
 
+<!-- Cart and Toast Styles -->
+<link rel="stylesheet" href="{% static 'css/toast-notifications.css' %}">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" 
             integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" 
             crossorigin="anonymous" referrerpolicy="no-referrer">
     </script>
+
+    <!-- Add before </body> -->
+
+<!-- Cart Management Script -->
+<script src="{% static 'js/cart-manager.js' %}"></script>
+<!-- Product Detail Page Script -->
+<script src="{% static 'js/product-detail.js' %}"></script>
+<!-- Toast Styles -->
+<link rel="stylesheet" href="{% static 'css/cart-actions.css' %}">
+<!-- Add in <head> section -->
+
+<link rel="stylesheet" href="{% static 'css/product-details-modern.css' %}">
+<!-- Modern Ecommerce Styling Overrides -->
+<link rel="stylesheet" href="{% static 'css/modern-ecommerce-overrides.css' %}">
+
+<script>
+    // Initialize cart on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        // Cart manager auto-initializes
+        
+        // Listen for cart updates
+        window.addEventListener('cartUpdated', (e) => {
+            console.log('Cart updated:', e.detail);
+        });
+    });
+</script>
 
     {% include 'partials/react-setup.html' %}
 </head>
@@ -173,79 +201,32 @@
                             </div><!-- End .dropdown-menu -->
                         </div><!-- End .compare-dropdown -->
 
-                        <div class="wishlist">
-                            <a href="wishlist.html" title="Wishlist">
-                                <div class="icon">
-                                    <i class="icon-heart-o"></i>
-                                    <span class="wishlist-count badge">3</span>
-                                </div>
-                                <p>Wishlist</p>
-                            </a>
-                        </div><!-- End .compare-dropdown -->
-
                         <div class="dropdown cart-dropdown">
-                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-display="static">
+                            <a href="#" class="dropdown-toggle" role="button" data-toggle="dropdown">
                                 <div class="icon">
-                                    <i class="icon-shopping-cart"></i>
-                                    <span class="cart-count">2</span>
+                                    <i class="icon-shopping-cart" data-cart-icon></i>
+                                    <span class="cart-count badge badge-danger" data-cart-count style="display: none;">0</span>
                                 </div>
                                 <p>Cart</p>
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-right">
-                                <div class="dropdown-cart-products">
-                                    <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Beige knitted elastic runner shoes</a>
-                                            </h4>
+                            <div class="dropdown-menu dropdown-menu-right" style="min-width: 350px;">
+                                <div class="dropdown-cart-products" id="cartPreview">
+                                    <p class="text-center text-muted py-3">
+                                        <i class="icon-shopping-cart" style="font-size: 32px; display: block; margin-bottom: 10px; opacity: 0.3;"></i>
+                                        Cart is empty
+                                    </p>
+                                </div>
 
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $84.00
-                                            </span>
-                                        </div><!-- End .product-cart-details -->
-
-                                        <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="{% static 'assets/images/products/cart/product-1.jpg' %}" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div><!-- End .product -->
-
-                                    <div class="product">
-                                        <div class="product-cart-details">
-                                            <h4 class="product-title">
-                                                <a href="product.html">Blue utility pinafore denim dress</a>
-                                            </h4>
-
-                                            <span class="cart-product-info">
-                                                <span class="cart-product-qty">1</span>
-                                                x $76.00
-                                            </span>
-                                        </div><!-- End .product-cart-details -->
-
-                                        <figure class="product-image-container">
-                                            <a href="product.html" class="product-image">
-                                                <img src="{% static 'assets/images/products/cart/product-2.jpg' %}" alt="product">
-                                            </a>
-                                        </figure>
-                                        <a href="#" class="btn-remove" title="Remove Product"><i class="icon-close"></i></a>
-                                    </div><!-- End .product -->
-                                </div><!-- End .cart-product -->
-
-                                <div class="dropdown-cart-total">
-                                    <span>Total</span>
-
-                                    <span class="cart-total-price">$160.00</span>
-                                </div><!-- End .dropdown-cart-total -->
-
-                                <div class="dropdown-cart-action">
-                                    <a href="cart.html" class="btn btn-primary">View Cart</a>
-                                    <a href="checkout.html" class="btn btn-outline-primary-2"><span>Checkout</span><i class="icon-long-arrow-right"></i></a>
-                                </div><!-- End .dropdown-cart-total -->
-                            </div><!-- End .dropdown-menu -->
+                                <div class="dropdown-cart-action" style="padding: 15px;">
+                                    <a href="{% url 'fabrythingapp:cart' %}" class="btn btn-primary btn-sm btn-block mb-2">
+                                        <i class="icon-shopping-cart me-2"></i>View Cart
+                                    </a>
+                                    <a href="{% url 'fabrythingapp:checkout' %}" class="btn btn-outline-primary btn-sm btn-block">
+                                        <i class="icon-arrow-right me-2"></i>Checkout
+                                    </a>
+                                </div>
+                            </div>
                         </div><!-- End .cart-dropdown -->
                     </div><!-- End .header-right -->
                 </div><!-- End .container -->

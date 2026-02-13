@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from decouple import config
+from decouple import config # pyright: ignore[reportMissingImports]
 from datetime import timedelta
 
 # Build paths
@@ -34,6 +34,9 @@ INSTALLED_APPS = [
     'fabrythingapp',
     'userauthapp',
     'fontawesomefree',
+    'ProductServices',
+    'InventoryServices',
+    'OrderServices',
 
     #Third Party Apps
     'taggit',
@@ -109,6 +112,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom User Model
 AUTH_USER_MODEL = 'userauthapp.User'
+# AUTH_USER_MODEL = 'UserServices.Users'  # Using the Users model from UserServices app
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
@@ -174,7 +178,27 @@ SPECTACULAR_SETTINGS = {
     ],
 }
 
-# Logging Configuration
+# ============================================================================
+# EMAIL CONFIGURATION
+# ============================================================================
+
+# For development - use console backend (prints to console)
+if DEBUG:
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # For production - use SMTP
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'your-email@gmail.com')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', 'your-app-password')
+    DEFAULT_FROM_EMAIL = 'noreply@fabrything.com'
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -183,49 +207,25 @@ LOGGING = {
             'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
             'style': '{',
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
     },
     'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
         'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'fabrything.log',
-            'maxBytes': 1024 * 1024 * 10,  # 10 MB
-            'backupCount': 5,
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'logs/fabrything.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
         'fabrythingapp': {
-            'handlers': ['console', 'file'],
+            'handlers': ['file', 'console'],
             'level': 'DEBUG',
-            'propagate': False,
-        },
-        'userauthapp': {
-            'handlers': ['console', 'file'],
-            'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
     },
 }
@@ -243,15 +243,6 @@ CKEDITOR_5_CONFIGS = {
         'toolbar': ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote', 'imageUpload'],
     }
 }
-
-# Email Configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ============================================================================
 # CACHING CONFIGURATION

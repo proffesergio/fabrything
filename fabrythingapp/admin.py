@@ -1,5 +1,5 @@
 from django.contrib import admin
-from fabrythingapp.models import Product, Category, Vendor, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, ProductView, UserPreferences, RecommendationCache
+from fabrythingapp.models import Product, Category, Vendor, ShippingMethod, OrderStatus, OrderNotification, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, ProductView, UserPreferences, RecommendationCache
 
 
 # Register your models here.
@@ -58,7 +58,7 @@ class AddressAdmin(admin.ModelAdmin):
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Vendor, VendorAdmin)
-admin.site.register(CartOrder, CartOrderAdmin)
+# admin.site.register(CartOrderAdmin)
 admin.site.register(CartOrderItems, CartOrderItemsAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)
 admin.site.register(Wishlist, WishlistAdmin)
@@ -103,3 +103,40 @@ class RecommendationCacheAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         """Allow deletion to clear expired caches"""
         return True
+
+@admin.register(ShippingMethod)
+class ShippingMethodAdmin(admin.ModelAdmin):
+    list_display = ['name', 'cost', 'delivery_days', 'is_active']
+    list_filter = ['is_active']
+    search_fields = ['name']
+
+@admin.register(OrderStatus)
+class OrderStatusAdmin(admin.ModelAdmin):
+    list_display = ['order', 'get_status_display', 'tracking_number', 'created_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['order__id', 'tracking_number']
+    readonly_fields = ['created_at']
+
+@admin.register(OrderNotification)
+class OrderNotificationAdmin(admin.ModelAdmin):
+    list_display = ['order', 'user', 'notification_type', 'sent_at', 'is_read']
+    list_filter = ['notification_type', 'is_read', 'sent_at']
+    search_fields = ['subject', 'message']
+    readonly_fields = ['sent_at']
+
+# Update CartOrderAdmin
+@admin.register(CartOrder)
+class CartOrderAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'price', 'payment_method', 'product_status', 'created_at']
+    list_filter = ['payment_method', 'product_status', 'created_at']
+    search_fields = ['user__email', 'id']
+    readonly_fields = ['created_at', 'updated_at', 'order_date']
+    
+    fieldsets = (
+        ('Order Info', {'fields': ('user', 'id', 'order_date', 'created_at', 'updated_at')}),
+        ('Items', {'fields': ('items',)}),
+        ('Pricing', {'fields': ('subtotal', 'shipping_cost', 'discount_applied', 'taxes', 'price')}),
+        ('Shipping', {'fields': ('shipping_method', 'shipping_address')}),
+        ('Payment', {'fields': ('payment_method', 'paid_status', 'coupon_code')}),
+        ('Status & Notes', {'fields': ('product_status', 'notes')}),
+    )

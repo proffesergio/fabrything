@@ -1,0 +1,160 @@
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCart } from '../hooks/useCart';
+import './CartPage.css';
+
+/**
+ * Shopping Cart Page Component
+ * Displays all items in cart with quantity controls
+ */
+const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
+    const [quantity, setQuantity] = useState(item.quantity);
+
+    const handleQuantityChange = (e) => {
+        const newQty = parseInt(e.target.value);
+        setQuantity(newQty);
+        onUpdateQuantity(item.id, newQty);
+    };
+
+    return (
+        <motion.div
+            className="cart-item"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            transition={{ duration: 0.3 }}
+        >
+            <img src={item.image} alt={item.product_title} className="cart-item-image" />
+            
+            <div className="cart-item-info">
+                <h4>{item.product_title}</h4>
+                <div className="item-details">
+                    {item.size && <span>Size: {item.size}</span>}
+                    {item.color && <span>Color: {item.color}</span>}
+                </div>
+            </div>
+
+            <div className="cart-item-controls">
+                <select value={quantity} onChange={handleQuantityChange} className="qty-select">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                        <option key={n} value={n}>{n}</option>
+                    ))}
+                </select>
+            </div>
+
+            <div className="cart-item-price">
+                <div className="price-per-unit">৳{item.price.toFixed(2)}</div>
+                <div className="total-price">৳{item.total.toFixed(2)}</div>
+            </div>
+
+            <button
+                onClick={() => onRemove(item.id)}
+                className="remove-btn"
+                aria-label="Remove item"
+            >
+                ✕
+            </button>
+        </motion.div>
+    );
+};
+
+const CartPage = () => {
+    const { cart, loading, error, fetchCart, removeItem, updateItem, clearCart } = useCart();
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+    useEffect(() => {
+        fetchCart();
+    }, [fetchCart]);
+
+    if (loading) {
+        return (
+            <div className="cart-page">
+                <div className="skeleton-loader">
+                    {[1, 2, 3].map(i => (
+                        <div key={i} className="skeleton-item"></div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="cart-page">
+                <div className="error-message">
+                    {error}
+                    <button onClick={fetchCart} className="btn-retry">Retry</button>
+                </div>
+            </div>
+        );
+    }
+
+    const isEmpty = !cart || cart.items.length === 0;
+
+    return (
+        <div className="cart-page">
+            <div className="cart-container">
+                <h1>Shopping Cart</h1>
+
+                {isEmpty ? (
+                    <div className="empty-cart">
+                        <p>Your cart is empty</p>
+                        <a href="/shop" className="btn-shop">Continue Shopping</a>
+                    </div>
+                ) : (
+                    <>
+                        <div className="cart-items">
+                            <AnimatePresence>
+                                {cart.items.map(item => (
+                                    <CartItem
+                                        key={item.id}
+                                        item={item}
+                                        onRemove={removeItem}
+                                        onUpdateQuantity={updateItem}
+                                    />
+                                ))}
+                            </AnimatePresence>
+                        </div>
+
+                        <div className="cart-summary">
+                            <h3>Order Summary</h3>
+                            <div className="summary-row">
+                                <span>Subtotal</span>
+                                <span>৳{cart.subtotal?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div className="summary-row">
+                                <span>Tax (5%)</span>
+                                <span>৳{cart.taxes?.toFixed(2) || '0.00'}</span>
+                            </div>
+                            <div className="summary-row highlight">
+                                <span>Total</span>
+                                <span>৳{cart.price?.toFixed(2) || '0.00'}</span>
+                            </div>
+
+                            <div className="cart-actions">
+                                <button onClick={clearCart} className="btn-clear" disabled={loading}>
+                                    Clear Cart
+                                </button>
+                                <button
+                                    onClick={() => setIsCheckingOut(true)}
+                                    className="btn-checkout primary"
+                                    disabled={loading || isEmpty}
+                                >
+                                    {isCheckingOut ? 'Processing...' : 'Proceed to Checkout'}
+                                </button>
+                            </div>
+
+                            {isCheckingOut && (
+                                <script>
+                                    {`window.location.href = '/checkout'`}
+                                </script>
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default CartPage;

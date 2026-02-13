@@ -1,0 +1,140 @@
+/**
+ * useCart Hook
+ * 
+ * Manages shopping cart state and operations.
+ * Handles API communication with backend.
+ */
+
+import { useState, useEffect, useCallback } from 'react';
+
+const useCart = () => {
+  const [cart, setCart] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const getToken = () => localStorage.getItem('access_token');
+
+  const apiCall = useCallback(async (endpoint, method = 'GET', body = null) => {
+    try {
+      setError(null);
+      const token = getToken();
+      
+      if (!token) {
+        throw new Error('Not authenticated');
+      }
+
+      const options = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      };
+
+      if (body) {
+        options.body = JSON.stringify(body);
+      }
+
+      const response = await fetch(`/api/v1${endpoint}`, options);
+
+      if (response.status === 401) {
+        localStorage.clear();
+        window.location.href = '/user/login/';
+        return null;
+      }
+
+      if (!response.ok) {
+        const error_data = await response.json();
+        throw new Error(error_data.detail || 'API Error');
+      }
+
+      return await response.json();
+    } catch (err) {
+      setError(err.message);
+      console.error('Cart API Error:', err);
+      throw err;
+    }
+  }, []);
+
+  // Fetch cart on mount
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const fetchCart = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await apiCall('/cart/current/');
+      setCart(data);
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall]);
+
+  const addItem = useCallback(async (productId, quantity = 1, size = '', color = '') => {
+    setLoading(true);
+    try {
+      await apiCall('/cart/add_item/', 'POST', {
+        product_id: productId,
+        quantity,
+        size,
+        color,
+      });
+      await fetchCart();
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall, fetchCart]);
+
+  const updateItem = useCallback(async (itemId, quantity) => {
+    setLoading(true);
+    try {
+      await apiCall('/cart/update_item/', 'POST', {
+        item_id: itemId,
+        quantity,
+      });
+      await fetchCart();
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall, fetchCart]);
+
+  const removeItem = useCallback(async (itemId) => {
+    setLoading(true);
+    try {
+      await apiCall('/cart/remove_item/', 'POST', {
+        item_id: itemId,
+      });
+      await fetchCart();
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall, fetchCart]);
+
+  const clearCart = useCallback(async () => {
+    setLoading(true);
+    try {
+      await apiCall('/cart/clear/', 'POST');
+      setCart(null);
+      return true;
+    } finally {
+      setLoading(false);
+    }
+  }, [apiCall]);
+
+  return {
+    cart,
+    loading,
+    error,
+    fetchCart,
+    addItem,
+    updateItem,
+    removeItem,
+    clearCart,
+  };
+};
+
+export default useCart;

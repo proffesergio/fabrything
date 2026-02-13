@@ -10,8 +10,8 @@
  * - Optimistic updates
  */
 
-import { useState } from 'react';
-
+import { useState, useCallback, useEffect } from 'react';
+/**
 const useCart = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -133,5 +133,153 @@ const useCart = () => {
     success,
   };
 };
+*/
 
+/**
+ * Custom hook for shopping cart operations
+ * Manages cart state and API calls
+ */
+export const useCart = (onError = null) => {
+    const [cart, setCart] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const API_BASE = '/api/v1';
+
+    // Fetch current cart
+    const fetchCart = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/cart/current_cart/`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) throw new Error('Failed to fetch cart');
+            const data = await response.json();
+            setCart(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            if (onError) onError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [onError]);
+
+    // Add item to cart
+    const addItem = useCallback(async (productId, quantity = 1, size = '', color = '') => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/cart/add_item/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    product_id: productId,
+                    quantity,
+                    size,
+                    color
+                })
+            });
+            if (!response.ok) throw new Error('Failed to add item');
+            const data = await response.json();
+            setCart(data);
+            setError(null);
+            return data;
+        } catch (err) {
+            setError(err.message);
+            if (onError) onError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [onError]);
+
+    // Remove item from cart
+    const removeItem = useCallback(async (itemId) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/cart/remove_item/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ item_id: itemId })
+            });
+            if (!response.ok) throw new Error('Failed to remove item');
+            const data = await response.json();
+            setCart(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            if (onError) onError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [onError]);
+
+    // Update item quantity
+    const updateItem = useCallback(async (itemId, quantity) => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/cart/update_item/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    item_id: itemId,
+                    quantity
+                })
+            });
+            if (!response.ok) throw new Error('Failed to update item');
+            const data = await response.json();
+            setCart(data);
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            if (onError) onError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [onError]);
+
+    // Clear cart
+    const clearCart = useCallback(async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE}/cart/clear/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!response.ok) throw new Error('Failed to clear cart');
+            setCart({ items: [], price: 0 });
+            setError(null);
+        } catch (err) {
+            setError(err.message);
+            if (onError) onError(err);
+        } finally {
+            setLoading(false);
+        }
+    }, [onError]);
+
+    return {
+        cart,
+        loading,
+        error,
+        fetchCart,
+        addItem,
+        removeItem,
+        updateItem,
+        clearCart
+    };
+};
 export default useCart;

@@ -1,3 +1,4 @@
+import random
 from django.db import models
 from shortuuid.django_fields import ShortUUIDField
 from django.utils.html import mark_safe
@@ -121,7 +122,7 @@ class Product(models.Model):
 
     specs = CKEditor5Field(null=True, blank=True)
     type = models.CharField(max_length=100, default="100% Cotton", null=True, blank=True)
-    stock_count = models.CharField(max_length=100, default="10", null=True, blank=True)
+    stock_count = models.IntegerField(default=10, help_text="Total units in stock")  # FIXED: Changed from CharField to IntegerField
     sizes = models.CharField(choices=SIZES, max_length=10, default="L", null=True, blank=True)
     # tags = models.ForeignKey(Tags, on_delete=models.SET_NULL, null=True)
     # rating = models.CharField(choices=RATING, max_length=100, default=None, null=True, blank=True)
@@ -163,6 +164,22 @@ class Product(models.Model):
     def get_price(self):
         return self.price
     
+    def get_average_rating(self):
+        """Calculate average rating from product reviews"""
+        reviews = self.reviews.all()
+        if reviews.exists():
+            avg_rating = sum([r.rating for r in reviews]) / reviews.count()
+            return round(avg_rating, 1)
+        return 0
+    
+    def get_rating_count(self):
+        """Get total number of reviews"""
+        return self.reviews.count()
+    
+    def is_in_stock(self):
+        """Check if product has stock available"""
+        return self.stock_count > 0 and self.in_stock and self.status
+    
 class ProductImages(models.Model):
     images = models.ImageField(upload_to="product_images", default="product.jpg")
     product = models.ForeignKey(Product, related_name="product_images", on_delete=models.SET_NULL, null=True)
@@ -172,6 +189,7 @@ class ProductImages(models.Model):
         verbose_name_plural = "ProductImages"
 
 # Cart, Order, OrderItems, Address
+
 class CartOrder(models.Model):
     """
     Shopping order/invoice model.
@@ -312,6 +330,16 @@ class CartOrder(models.Model):
             return f"{latest_status.get_status_display()} ({latest_status.created_at.strftime('%Y-%m-%d')})"
         return "No status"
 
+    def save(self, *args, **kwargs):
+        # Generate order ID if not exists
+        if not self.order_id:
+            from django.utils import timezone
+            date_str = timezone.now().strftime('%Y%m%d')
+            user_id = self.user.id
+            rand_num = random.randint(100, 999)
+            self.order_id = f"ORD-{date_str}-{user_id}-{rand_num}"
+        
+        super().save(*args, **kwargs)
 
 class CartOrderItems(models.Model):
     """
@@ -448,6 +476,7 @@ class Wishlist(models.Model):
         return 0
 
 # ... existing code ...    
+
 class Address(models.Model):
     """
     User delivery addresses.
@@ -561,6 +590,12 @@ class Address(models.Model):
     def get_address(self):
         """Legacy method compatibility"""
         return self.get_full_address() 
+    
+    def save(self, *args, **kwargs):
+        # Ensure only one default address per user
+        if self.is_default:
+            Address.objects.filter(user=self.user).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
     
 # ============================================================================
 # ANALYTICS & RECOMMENDATIONS MODELS
@@ -752,54 +787,54 @@ class RecommendationCache(models.Model):
 # TIER 1: SHOPPING & ORDER MANAGEMENT MODELS
 # ============================================================================
 
-class ShippingMethod(models.Model):
-    """
-    Shipping methods with costs and delivery estimates.
+# class ShippingMethod(models.Model):
+#     """
+#     Shipping methods with costs and delivery estimates.
     
-    Used for:
-    - Displaying shipping options during checkout
-    - Calculating shipping cost
-    - Setting delivery expectations
+#     Used for:
+#     - Displaying shipping options during checkout
+#     - Calculating shipping cost
+#     - Setting delivery expectations
     
-    Example:
-        Standard: $5, 3-5 days
-        Express: $15, 1-2 days
-    """
-    name = models.CharField(
-        max_length=50,
-        unique=True,
-        help_text="E.g., Standard, Express, Overnight"
-    )
-    description = models.CharField(
-        max_length=200,
-        blank=True,
-        help_text="User-facing description"
-    )
-    cost = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        help_text="Shipping cost"
-    )
-    delivery_days = models.IntegerField(
-        help_text="Expected delivery days (e.g., 3 for 3-5 days)"
-    )
-    max_delivery_days = models.IntegerField(
-        default=1,
-        help_text="Maximum delivery days"
-    )
-    is_active = models.BooleanField(
-        default=True,
-        help_text="Enable/disable this shipping option"
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
+#     Example:
+#         Standard: $5, 3-5 days
+#         Express: $15, 1-2 days
+#     """
+#     name = models.CharField(
+#         max_length=50,
+#         unique=True,
+#         help_text="E.g., Standard, Express, Overnight"
+#     )
+#     description = models.CharField(
+#         max_length=200,
+#         blank=True,
+#         help_text="User-facing description"
+#     )
+#     cost = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         help_text="Shipping cost"
+#     )
+#     delivery_days = models.IntegerField(
+#         help_text="Expected delivery days (e.g., 3 for 3-5 days)"
+#     )
+#     max_delivery_days = models.IntegerField(
+#         default=1,
+#         help_text="Maximum delivery days"
+#     )
+#     is_active = models.BooleanField(
+#         default=True,
+#         help_text="Enable/disable this shipping option"
+#     )
+#     created_at = models.DateTimeField(auto_now_add=True)
     
-    class Meta:
-        verbose_name = "Shipping Method"
-        verbose_name_plural = "Shipping Methods"
-        ordering = ['delivery_days', 'cost']
+#     class Meta:
+#         verbose_name = "Shipping Method"
+#         verbose_name_plural = "Shipping Methods"
+#         ordering = ['delivery_days', 'cost']
     
-    def __str__(self):
-        return f"{self.name} (${self.cost}, {self.delivery_days} days)"
+#     def __str__(self):
+#         return f"{self.name} (${self.cost}, {self.delivery_days} days)"
 
 
 class OrderStatus(models.Model):
@@ -868,67 +903,67 @@ class OrderStatus(models.Model):
         return f"{self.order.id} - {self.get_status_display()}"
 
 
-class OrderNotification(models.Model):
-    """
-    Track notifications sent to customers.
+# class OrderNotification(models.Model):
+#     """
+#     Track notifications sent to customers.
     
-    Notifications about:
-    - Order confirmation
-    - Status updates
-    - Delivery notifications
-    - Return confirmations
-    """
-    NOTIFICATION_TYPE_CHOICES = (
-        ('email', 'Email'),
-        ('sms', 'SMS'),
-        ('push', 'Push Notification'),
-        ('in_app', 'In-App'),
-    )
+#     Notifications about:
+#     - Order confirmation
+#     - Status updates
+#     - Delivery notifications
+#     - Return confirmations
+#     """
+#     NOTIFICATION_TYPE_CHOICES = (
+#         ('email', 'Email'),
+#         ('sms', 'SMS'),
+#         ('push', 'Push Notification'),
+#         ('in_app', 'In-App'),
+#     )
     
-    order = models.ForeignKey(
-        'CartOrder',
-        on_delete=models.CASCADE,
-        related_name='notifications',
-        help_text="Associated order"
-    )
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='order_notifications',
-        help_text="Recipient user"
-    )
-    notification_type = models.CharField(
-        max_length=20,
-        choices=NOTIFICATION_TYPE_CHOICES,
-        help_text="Type of notification"
-    )
-    subject = models.CharField(
-        max_length=200,
-        help_text="Notification subject/title"
-    )
-    message = models.TextField(
-        help_text="Notification message content"
-    )
-    sent_at = models.DateTimeField(
-        auto_now_add=True,
-        help_text="When notification was sent"
-    )
-    is_read = models.BooleanField(
-        default=False,
-        help_text="Whether user has read notification"
-    )
+#     order = models.ForeignKey(
+#         'CartOrder',
+#         on_delete=models.CASCADE,
+#         related_name='notifications',
+#         help_text="Associated order"
+#     )
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='order_notifications',
+#         help_text="Recipient user"
+#     )
+#     notification_type = models.CharField(
+#         max_length=20,
+#         choices=NOTIFICATION_TYPE_CHOICES,
+#         help_text="Type of notification"
+#     )
+#     subject = models.CharField(
+#         max_length=200,
+#         help_text="Notification subject/title"
+#     )
+#     message = models.TextField(
+#         help_text="Notification message content"
+#     )
+#     sent_at = models.DateTimeField(
+#         auto_now_add=True,
+#         help_text="When notification was sent"
+#     )
+#     is_read = models.BooleanField(
+#         default=False,
+#         help_text="Whether user has read notification"
+#     )
     
-    class Meta:
-        verbose_name = "Order Notification"
-        verbose_name_plural = "Order Notifications"
-        ordering = ['-sent_at']
-        indexes = [
-            models.Index(fields=['user', '-sent_at']),
-            models.Index(fields=['order', '-sent_at']),
-        ]
+#     class Meta:
+#         verbose_name = "Order Notification"
+#         verbose_name_plural = "Order Notifications"
+#         ordering = ['-sent_at']
+#         indexes = [
+#             models.Index(fields=['user', '-sent_at']),
+#             models.Index(fields=['order', '-sent_at']),
+#         ]
     
-    def __str__(self):
-        return f"{self.notification_type.upper()}: {self.subject}"
+#     def __str__(self):
+#         return f"{self.notification_type.upper()}: {self.subject}"
 
 
 # Enhance CartOrder model with migration
@@ -942,3 +977,498 @@ class OrderNotification(models.Model):
 # - created_at (DateTimeField)
 # - updated_at (DateTimeField)
 # - coupon_code (CharField, optional)
+# Add these at the end of the file (after all existing models):
+
+# ============================================================================
+# CART & ORDER MODELS (TIER 1)
+# ============================================================================
+
+class ShippingMethod(models.Model):
+    """
+    Shipping options available to customers.
+    
+    Examples:
+    - Standard Shipping: $5, 5-7 days
+    - Express Shipping: $15, 2-3 days
+    - Same-day Delivery: $25, same day
+    """
+    name = models.CharField(
+        max_length=100,
+        help_text="Display name (Standard, Express, etc)"
+    )
+    cost = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Shipping cost in BDT"
+    )
+    delivery_days = models.IntegerField(
+        help_text="Estimated delivery days"
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Description of shipping method"
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Is this shipping method available?"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['cost']
+        verbose_name = 'Shipping Method'
+        verbose_name_plural = 'Shipping Methods'
+    
+    def __str__(self):
+        return f"{self.name} - ৳{self.cost} ({self.delivery_days} days)"
+
+
+# class OrderStatus(models.Model):
+#     """
+#     Track order status changes over time.
+    
+#     Timeline:
+#     Pending → Processing → Shipped → Out for Delivery → Delivered
+#     Or: Pending → Cancelled
+#     """
+#     STATUS_CHOICES = [
+#         ('pending', 'Pending'),
+#         ('confirmed', 'Confirmed'),
+#         ('processing', 'Processing'),
+#         ('packed', 'Packed'),
+#         ('shipped', 'Shipped'),
+#         ('out_for_delivery', 'Out for Delivery'),
+#         ('delivered', 'Delivered'),
+#         ('cancelled', 'Cancelled'),
+#         ('returned', 'Returned'),
+#     ]
+    
+#     order = models.ForeignKey(
+#         'CartOrder',
+#         on_delete=models.CASCADE,
+#         related_name='status_history'
+#     )
+#     status = models.CharField(
+#         max_length=20,
+#         choices=STATUS_CHOICES,
+#         default='pending'
+#     )
+#     status_date = models.DateTimeField(auto_now_add=True)
+#     tracking_number = models.CharField(
+#         max_length=100,
+#         blank=True,
+#         help_text="Courier tracking number"
+#     )
+#     notes = models.TextField(
+#         blank=True,
+#         help_text="Internal notes about status change"
+#     )
+#     is_notified = models.BooleanField(
+#         default=False,
+#         help_text="Customer has been notified"
+#     )
+    
+#     class Meta:
+#         ordering = ['-status_date']
+#         verbose_name = 'Order Status'
+#         verbose_name_plural = 'Order Statuses'
+    
+#     def __str__(self):
+#         return f"{self.order.order_id} - {self.get_status_display()}"
+
+
+class OrderNotification(models.Model):
+    """
+    Track notifications sent to customers.
+    """
+    NOTIFICATION_TYPE_CHOICES = [
+        ('email', 'Email'),
+        ('sms', 'SMS'),
+        ('push', 'Push Notification'),
+    ]
+    
+    order = models.ForeignKey(
+        'CartOrder',
+        on_delete=models.CASCADE,
+        related_name='notifications'
+    )
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='order_notifications'
+    )
+    notification_type = models.CharField(
+        max_length=20,
+        choices=NOTIFICATION_TYPE_CHOICES
+    )
+    message = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['-sent_at']
+    
+    def __str__(self):
+        return f"{self.notification_type.upper()} to {self.user.email}"
+
+
+# Enhance existing CartOrder model (modify if exists)
+# Add these fields to CartOrder if they don't exist
+
+# class CartOrder(models.Model):
+#     """
+#     Customer orders - represents a complete purchase.
+#     """
+#     # Generate order ID like: ORD-2024001-001
+#     order_id = models.CharField(
+#         max_length=50,
+#         unique=True,
+#         db_index=True,
+#         editable=False
+#     )
+    
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='orders'
+#     )
+    
+#     # Pricing
+#     subtotal = models.DecimalField(
+#         max_digits=12,
+#         decimal_places=2,
+#         default=0,
+#         help_text="Total before discount & shipping"
+#     )
+#     discount_amount = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=0,
+#         help_text="Discount applied (coupon, promotion)"
+#     )
+#     shipping_cost = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=0,
+#         help_text="Shipping cost"
+#     )
+#     tax_amount = models.DecimalField(
+#         max_digits=10,
+#         decimal_places=2,
+#         default=0,
+#         help_text="Tax amount (VAT, etc)"
+#     )
+#     total_price = models.DecimalField(
+#         max_digits=12,
+#         decimal_places=2,
+#         help_text="Final total: subtotal - discount + shipping + tax"
+#     )
+    
+#     # Shipping & Delivery
+#     shipping_method = models.ForeignKey(
+#         ShippingMethod,
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True
+#     )
+#     shipping_address = models.ForeignKey(
+#         'Address',
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         related_name='orders_shipped'
+#     )
+    
+#     # Payment
+#     payment_method = models.CharField(
+#         max_length=50,
+#         choices=[
+#             ('cod', 'Cash on Delivery'),
+#             ('bkash', 'bKash'),
+#             ('nagad', 'Nagad'),
+#             ('rocket', 'Rocket'),
+#             ('visa', 'Visa Card'),
+#             ('mastercard', 'Mastercard'),
+#             ('stripe', 'Stripe'),
+#         ],
+#         default='cod'
+#     )
+#     paid_status = models.BooleanField(
+#         default=False,
+#         help_text="Whether payment has been received"
+#     )
+#     payment_date = models.DateTimeField(
+#         null=True,
+#         blank=True
+#     )
+    
+#     # Status
+#     order_status = models.CharField(
+#         max_length=20,
+#         choices=[
+#             ('pending', 'Pending'),
+#             ('confirmed', 'Confirmed'),
+#             ('processing', 'Processing'),
+#             ('packed', 'Packed'),
+#             ('shipped', 'Shipped'),
+#             ('out_for_delivery', 'Out for Delivery'),
+#             ('delivered', 'Delivered'),
+#             ('cancelled', 'Cancelled'),
+#         ],
+#         default='pending'
+#     )
+    
+#     # Metadata
+#     coupon_code = models.CharField(
+#         max_length=50,
+#         blank=True,
+#         help_text="Applied coupon code"
+#     )
+#     notes = models.TextField(
+#         blank=True,
+#         help_text="Customer notes/special instructions"
+#     )
+    
+#     # Timestamps
+#     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+    
+#     class Meta:
+#         ordering = ['-created_at']
+#         verbose_name = 'Order'
+#         verbose_name_plural = 'Orders'
+#         indexes = [
+#             models.Index(fields=['user', '-created_at']),
+#             models.Index(fields=['order_status']),
+#             models.Index(fields=['order_id']),
+#         ]
+    
+#     def __str__(self):
+#         return f"Order {self.order_id} - {self.user.email}"
+    
+#     def save(self, *args, **kwargs):
+#         # Generate order ID if not exists
+#         if not self.order_id:
+#             from django.utils import timezone
+#             date_str = timezone.now().strftime('%Y%m%d')
+#             count = CartOrder.objects.filter(
+#                 created_at__date=timezone.now().date()
+#             ).count() + 1
+#             user_count = CartOrder.objects.filter(user=self.user).count() + 1
+#             self.order_id = f"ORD-{date_str}-{user_count:04d}"
+        
+#         # Recalculate total
+#         self.total_price = (
+#             self.subtotal - self.discount_amount +
+#             self.shipping_cost + self.tax_amount
+#         )
+        
+#         super().save(*args, **kwargs)
+
+
+# class CartOrderItems(models.Model):
+#     """
+#     Individual items in an order.
+#     Stores product details at time of purchase (price, size, etc).
+#     """
+#     order = models.ForeignKey(
+#         CartOrder,
+#         on_delete=models.CASCADE,
+#         related_name='items'
+#     )
+#     product = models.ForeignKey(
+#         Product,
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         related_name='order_items'
+#     )
+    
+#     # Product details at time of purchase
+#     product_name = models.CharField(max_length=255)
+#     product_price = models.DecimalField(max_digits=12, decimal_places=2)
+    
+#     # Variant selections
+#     size = models.CharField(
+#         max_length=50,
+#         blank=True,
+#         help_text="Selected size (XS, S, M, L, XL, etc)"
+#     )
+#     color = models.CharField(
+#         max_length=50,
+#         blank=True,
+#         help_text="Selected color"
+#     )
+    
+#     # Quantity & pricing
+#     quantity = models.PositiveIntegerField(default=1)
+#     subtotal = models.DecimalField(
+#         max_digits=12,
+#         decimal_places=2,
+#         help_text="product_price × quantity"
+#     )
+    
+#     # Timestamps
+#     created_at = models.DateTimeField(auto_now_add=True)
+    
+#     class Meta:
+#         ordering = ['created_at']
+    
+#     def __str__(self):
+#         return f"{self.product_name} (x{self.quantity})"
+    
+#     def save(self, *args, **kwargs):
+#         self.subtotal = self.product_price * self.quantity
+#         super().save(*args, **kwargs)
+
+
+# Enhance existing Address model
+
+# class Address(models.Model):
+#     """
+#     User shipping addresses - support multiple addresses per user.
+#     """
+#     ADDRESS_TYPES = [
+#         ('home', 'Home'),
+#         ('work', 'Work'),
+#         ('other', 'Other'),
+#     ]
+    
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='addresses'
+#     )
+    
+#     # Address info
+#     full_name = models.CharField(
+#         max_length=255,
+#         help_text="Recipient name"
+#     )
+#     phone_number = models.CharField(
+#         max_length=20,
+#         help_text="Contact phone number"
+#     )
+#     address_type = models.CharField(
+#         max_length=10,
+#         choices=ADDRESS_TYPES,
+#         default='home'
+#     )
+    
+#     # Full address
+#     street_address = models.CharField(max_length=255)
+#     city = models.CharField(max_length=100)
+#     state = models.CharField(max_length=100)
+#     postal_code = models.CharField(max_length=20)
+#     country = models.CharField(
+#         max_length=100,
+#         default='Bangladesh'
+#     )
+    
+#     # Default address
+#     is_default = models.BooleanField(
+#         default=False,
+#         help_text="Use as default shipping address"
+#     )
+    
+#     # Status
+#     is_active = models.BooleanField(default=True)
+    
+#     created_at = models.DateTimeField(auto_now_add=True)
+#     updated_at = models.DateTimeField(auto_now=True)
+    
+#     class Meta:
+#         ordering = ['-is_default', '-created_at']
+#         verbose_name_plural = 'Addresses'
+    
+#     def __str__(self):
+#         return f"{self.full_name}, {self.city}"
+    
+#     def save(self, *args, **kwargs):
+#         # Ensure only one default address per user
+#         if self.is_default:
+#             Address.objects.filter(
+#                 user=self.user,
+#                 is_default=True
+#             ).exclude(pk=self.pk).update(is_default=False)
+        
+#         super().save(*args, **kwargs)
+
+
+# ============================================================================
+# CART MODEL (Temporary shopping cart - before checkout)
+# ============================================================================
+
+class Cart(models.Model):
+    """
+    Temporary shopping cart - one per user.
+    Deleted when order is placed.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='cart'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name_plural = 'Carts'
+    
+    def __str__(self):
+        return f"Cart for {self.user.email}"
+    
+    @property
+    def subtotal(self):
+        """Calculate cart subtotal"""
+        return sum(
+            item.total_price for item in self.items.all()
+        )
+    
+    @property
+    def item_count(self):
+        """Total number of items in cart"""
+        return sum(item.quantity for item in self.items.all())
+
+
+class CartItem(models.Model):
+    """
+    Individual items in shopping cart.
+    """
+    cart = models.ForeignKey(
+        Cart,
+        on_delete=models.CASCADE,
+        related_name='items'
+    )
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE
+    )
+    
+    # Variant selections
+    size = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Selected size"
+    )
+    color = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="Selected color"
+    )
+    
+    quantity = models.PositiveIntegerField(default=1)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        unique_together = ['cart', 'product', 'size', 'color']
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.product.title} x{self.quantity}"
+    
+    @property
+    def total_price(self):
+        """Item total: price × quantity"""
+        return self.product.price * self.quantity

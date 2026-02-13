@@ -1,0 +1,317 @@
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useCheckout } from '../hooks/useCheckout';
+import { useCart } from '../hooks/useCart';
+import { useAddresses } from '../hooks/useAddresses';
+import './CheckoutFlow.css';
+
+/**
+ * Multi-step Checkout Component
+ * Steps: Address → Shipping → Review → Confirm
+ */
+const CheckoutFlow = () => {
+    const [step, setStep] = useState(1);
+    const [shippingMethods, setShippingMethods] = useState([]);
+    const [newAddress, setNewAddress] = useState({
+        address_type: 'home',
+        full_name: '',
+        phone_number: '',
+        address: '',
+        city: '',
+        state: '',
+        postal_code: '',
+        country: 'Bangladesh',
+        is_default: false
+    });
+
+    const { cart, fetchCart } = useCart();
+    const { checkoutData, updateCheckout, validateCheckout, confirmCheckout } = useCheckout();
+    const { addresses, addAddress } = useAddresses();
+
+    const API_BASE = '/api/v1';
+
+    useEffect(() => {
+        fetchCart();
+        fetchShippingMethods();
+    }, [fetchCart]);
+
+    const fetchShippingMethods = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/shipping-methods/`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setShippingMethods(Array.isArray(data) ? data : data.results || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch shipping methods:', err);
+        }
+    };
+
+    const handleAddNewAddress = async () => {
+        try {
+            await addAddress(newAddress);
+            setNewAddress({
+                address_type: 'home',
+                full_name: '',
+                phone_number: '',
+                address: '',
+                city: '',
+                state: '',
+                postal_code: '',
+                country: 'Bangladesh',
+                is_default: false
+            });
+            setStep(2);
+        } catch (err) {
+            console.error('Failed to add address:', err);
+        }
+    };
+
+    const handleContinue = async () => {
+        if (step === 4) {
+            const order = await confirmCheckout();
+            if (order) {
+                window.location.href = `/order-confirmation/${order.id}`;
+            }
+        } else {
+            setStep(step + 1);
+        }
+    };
+
+    return (
+        <div className="checkout-flow">
+            <div className="checkout-container">
+                {/* Step Indicator */}
+                <div className="step-indicator">
+                    {[1, 2, 3, 4].map(s => (
+                        <div
+                            key={s}
+                            className={`step ${s === step ? 'active' : s < step ? 'completed' : ''}`}
+                        >
+                            <span>{s}</span>
+                            <label>{['Address', 'Shipping', 'Review', 'Confirm'][s - 1]}</label>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Step Content */}
+                <motion.div
+                    className="step-content"
+                    key={step}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {/* STEP 1: ADDRESS */}
+                    {step === 1 && (
+                        <div className="step-1-addresses">
+                            <h2>Select Delivery Address</h2>
+
+                            {addresses.length > 0 && (
+                                <div className="existing-addresses">
+                                    {addresses.map(addr => (
+                                        <div
+                                            key={addr.id}
+                                            className={`address-option ${
+                                                checkoutData.shipping_address_id === addr.id ? 'selected' : ''
+                                            }`}
+                                            onClick={() => updateCheckout('shipping_address_id', addr.id)}
+                                        >
+                                            <div className="address-content">
+                                                <h4>{addr.full_name}</h4>
+                                                <p>{addr.get_full_address}</p>
+                                                <small>{addr.phone_number}</small>
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                checked={checkoutData.shipping_address_id === addr.id}
+                                                onChange={() => updateCheckout('shipping_address_id', addr.id)}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Add New Address */}
+                            <div className="add-address-form">
+                                <h3>Add New Address</h3>
+                                <input
+                                    type="text"
+                                    placeholder="Full Name"
+                                    value={newAddress.full_name}
+                                    onChange={(e) => setNewAddress({...newAddress, full_name: e.target.value})}
+                                    className="input-field"
+                                />
+                                <input
+                                    type="tel"
+                                    placeholder="Phone Number (e.g., 01700000000)"
+                                    value={newAddress.phone_number}
+                                    onChange={(e) => setNewAddress({...newAddress, phone_number: e.target.value})}
+                                    className="input-field"
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Street Address"
+                                    value={newAddress.address}
+                                    onChange={(e) => setNewAddress({...newAddress, address: e.target.value})}
+                                    className="input-field"
+                                />
+                                <div className="address-row">
+                                    <input
+                                        type="text"
+                                        placeholder="City"
+                                        value={newAddress.city}
+                                        onChange={(e) => setNewAddress({...newAddress, city: e.target.value})}
+                                        className="input-field"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="State/District"
+                                        value={newAddress.state}
+                                        onChange={(e) => setNewAddress({...newAddress, state: e.target.value})}
+                                        className="input-field"
+                                    />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Postal Code"
+                                    value={newAddress.postal_code}
+                                    onChange={(e) => setNewAddress({...newAddress, postal_code: e.target.value})}
+                                    className="input-field"
+                                />
+                                <button onClick={handleAddNewAddress} className="btn-add-address">
+                                    Add This Address
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 2: SHIPPING METHOD */}
+                    {step === 2 && (
+                        <div className="step-2-shipping">
+                            <h2>Select Shipping Method</h2>
+                            <div className="shipping-options">
+                                {shippingMethods.map(method => (
+                                    <div
+                                        key={method.id}
+                                        className={`shipping-option ${
+                                            checkoutData.shipping_method_id === method.id ? 'selected' : ''
+                                        }`}
+                                        onClick={() => updateCheckout('shipping_method_id', method.id)}
+                                    >
+                                        <div>
+                                            <h4>{method.name}</h4>
+                                            <p>{method.delivery_days} days delivery</p>
+                                        </div>
+                                        <div className="shipping-price">
+                                            ৳{method.cost.toFixed(2)}
+                                        </div>
+                                        <input
+                                            type="radio"
+                                            checked={checkoutData.shipping_method_id === method.id}
+                                            onChange={() => updateCheckout('shipping_method_id', method.id)}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 3: REVIEW */}
+                    {step === 3 && (
+                        <div className="step-3-review">
+                            <h2>Review Your Order</h2>
+                            
+                            <div className="review-section">
+                                <h3>Items</h3>
+                                {cart?.items.map(item => (
+                                    <div key={item.id} className="review-item">
+                                        <div>{item.product_title} x{item.quantity}</div>
+                                        <div>৳{item.total.toFixed(2)}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="review-section">
+                                <h3>Payment</h3>
+                                <label>
+                                    <input
+                                        type="radio"
+                                        name="payment"
+                                        value="cod"
+                                        checked={checkoutData.payment_method === 'cod'}
+                                        onChange={(e) => updateCheckout('payment_method', e.target.value)}
+                                    />
+                                    Cash on Delivery (COD)
+                                </label>
+                            </div>
+
+                            <div className="review-section">
+                                <h3>Notes (Optional)</h3>
+                                <textarea
+                                    placeholder="Any special instructions?"
+                                    value={checkoutData.notes}
+                                    onChange={(e) => updateCheckout('notes', e.target.value)}
+                                    className="input-field"
+                                />
+                            </div>
+
+                            <div className="order-summary">
+                                <div className="summary-line">
+                                    <span>Subtotal</span>
+                                    <span>৳{cart?.subtotal?.toFixed(2)}</span>
+                                </div>
+                                <div className="summary-line">
+                                    <span>Shipping</span>
+                                    <span>৳{cart?.shipping_cost?.toFixed(2) || '0.00'}</span>
+                                </div>
+                                <div className="summary-line">
+                                    <span>Tax (5%)</span>
+                                    <span>৳{cart?.taxes?.toFixed(2)}</span>
+                                </div>
+                                <div className="summary-line highlight">
+                                    <span>Total</span>
+                                    <span>৳{cart?.price?.toFixed(2)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* STEP 4: CONFIRM */}
+                    {step === 4 && (
+                        <div className="step-4-confirm">
+                            <h2>Confirm Order</h2>
+                            <div className="confirmation-message">
+                                <p>✓ Please review all details carefully before placing your order.</p>
+                                <p>You will pay ৳{cart?.price?.toFixed(2)} on delivery.</p>
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+
+                {/* Navigation */}
+                <div className="checkout-nav">
+                    <button
+                        onClick={() => setStep(Math.max(1, step - 1))}
+                        disabled={step === 1}
+                        className="btn-secondary"
+                    >
+                        Previous
+                    </button>
+                    <button
+                        onClick={handleContinue}
+                        className="btn-primary"
+                    >
+                        {step === 4 ? 'Place Order' : 'Continue'}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CheckoutFlow;
