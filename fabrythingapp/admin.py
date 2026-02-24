@@ -1,5 +1,5 @@
 from django.contrib import admin
-from fabrythingapp.models import Product, Category, Vendor, ShippingMethod, OrderStatus, OrderNotification, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, ProductView, UserPreferences, RecommendationCache
+from fabrythingapp.models import Product, Category, ShippingMethod, OrderStatus, OrderNotification, CartOrder, CartOrderItems, Wishlist, ProductImages, ProductReview, Address, Brand, ProductView, UserPreferences, RecommendationCache
 
 
 # Register your models here.
@@ -57,7 +57,7 @@ class AddressAdmin(admin.ModelAdmin):
 
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Category, CategoryAdmin)
-admin.site.register(Vendor, VendorAdmin)
+# admin.site.register(Vendor, VendorAdmin)
 # admin.site.register(CartOrderAdmin)
 admin.site.register(CartOrderItems, CartOrderItemsAdmin)
 admin.site.register(ProductReview, ProductReviewAdmin)

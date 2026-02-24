@@ -1,6 +1,8 @@
 from django.urls import path, include
 from userauthapp.Controllers.DynamicFormController import DynamicFormController
-from userauthapp.Controllers.AuthController import LoginAPIView, RegisterApiView
+from userauthapp.Controllers.SuperAdminFormController import SuperAdminDynamicFormController
+from userauthapp.Controllers.SidebarController import ModuleView, ModuleUrlsListAPIView
+from userauthapp.Controllers.AuthController import LoginAPIView, RegisterAPIView
 from userauthapp.views import CustomTokenObtainPairView
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
@@ -62,13 +64,15 @@ urlpatterns = [
          ProductViewTrackingViewSet.as_view({'post': 'track_view'}),
          name='track-product-view'),
      # JWT Token endpoints
-    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
     # Auth endpoints using APIView classes
-    path('register/', RegisterApiView.as_view(), name='register'),
-    path('signin/', LoginAPIView.as_view(), name='login'),
+    path('signup/', RegisterAPIView.as_view(), name='signup'),
+    path('signin/', LoginAPIView.as_view(), name='signin'),
     path('getForm/<str:modelName>/', DynamicFormController.as_view(), name='getForm'),
+    path('superAdminForm/<str:modelName>/', SuperAdminDynamicFormController.as_view(), name='superadminForm'),
+    path('getMenus/', ModuleView.as_view(), name='sidebar-menus'),
 
 
 ]

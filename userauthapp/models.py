@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+import uuid
+from django.contrib.auth.hashers import make_password
 
 # Create your models here.
 # class User(AbstractUser):
@@ -32,6 +34,7 @@ class User(AbstractUser):
                             choices=[
                                 ('customer', 'Customer'), 
                                 ('admin', 'Admin'), 
+                                ('super admin', 'Super Admin'),
                                 ('vendor', 'Vendor'), 
                                 ('delivery', 'Delivery'), 
                                 ('support', 'Support'),
@@ -83,7 +86,7 @@ class User(AbstractUser):
         ('EUR', 'EUR'),
         ('TaKa', 'TK'),
     ])
-    domain_user_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='domain_users')
+    domain_user_id=models.ForeignKey('self',on_delete=models.CASCADE,blank=True,null=True,related_name='domain_user_id_user')
     domain_name = models.CharField(max_length=100, null=True, blank=True)
     plan_type = models.CharField(max_length=20, null=True, blank=True, choices=[
         ('free', 'Free'),
@@ -101,24 +104,40 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+    
+    def defaultkey():
+        return 'username'
+    
+    def save(self, *args, **kwargs):
+        if not self.domain_user_id and self.id:
+            self.domain_user_id=User.objects.get(id=self.id)
+
+        # Remove custom password hashing - Django's AbstractUser handles this correctly
+        # via set_password() and create_user() methods
+        super().save(*args, **kwargs)
 
 class Modules(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    icon = models.TextField(max_length=100, null=True, blank=True)
-    is_menu = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
-    module_url = models.CharField(max_length=100, null=True, blank=True)
-    parent_id = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='submodules')
-    display_order = models.IntegerField(default=0)
-    domain_user_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='domain_modules')
-    description = models.TextField(null=True, blank=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    id=models.AutoField(primary_key=True)
+    module_name=models.CharField(max_length=50,unique=True)
+    module_icon=models.CharField(null=True,blank=True,max_length=50)
+    is_menu=models.BooleanField(default=True)
+    is_active=models.BooleanField(default=True)
+    module_url=models.CharField(null=True,blank=True,max_length=50)
+    parent_id=models.ForeignKey('self',on_delete=models.CASCADE,blank=True,null=True)
+    display_order=models.IntegerField(default=0)
+    module_description=models.CharField(null=True,blank=True,max_length=255)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.name   
+        return self.module_name   
+
+class ModuleUrls(models.Model):
+    id=models.AutoField(primary_key=True)
+    module=models.ForeignKey(Modules,on_delete=models.CASCADE,blank=True,null=True)
+    url=models.CharField(max_length=255)
+    created_at=models.DateTimeField(auto_now_add=True)
+    updated_at=models.DateTimeField(auto_now=True)
 
 class UserPermissions(models.Model):
     id = models.AutoField(primary_key=True)

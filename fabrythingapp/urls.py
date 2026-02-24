@@ -34,7 +34,7 @@ urlpatterns = [
     path('api/v1/auth/', include('userauthapp.urls')),
     # API v1 - App endpoints
     path('api/v1/', include('fabrythingapp.api_urls')),
-    path('api/', include('userauthapp.api_urls')),
+    path('api/v1/', include('userauthapp.api_urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

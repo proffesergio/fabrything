@@ -83,28 +83,28 @@ class Category(models.Model):
 class Tags(models.Model):
     pass
     
-class Vendor(models.Model):
-    vid = ShortUUIDField(unique=True, length=10, max_length=20, prefix="vend")
-    title = models.CharField(max_length=100)
-    image = models.ImageField(upload_to=user_directory_path)
-    description = models.TextField(null=True, blank=True)
-    address = models.CharField(max_length=100, default="Vendor Address Goes Here")
-    contact = models.CharField(max_length=100, default="Phone Number")
-    chat_resp_time = models.CharField(max_length=100, default="100")
-    shipping_on_time = models.CharField(max_length=100, default="100")
-    authentic_rating = models.CharField(max_length=100, default="100")
-    days_return = models.CharField(max_length=100, default="100")
-    warranty_period = models.CharField(max_length=100, default="100")
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+# class Vendor(models.Model):
+#     vid = ShortUUIDField(unique=True, length=10, max_length=20, prefix="vend")
+#     title = models.CharField(max_length=100)
+#     image = models.ImageField(upload_to=user_directory_path)
+#     description = models.TextField(null=True, blank=True)
+#     address = models.CharField(max_length=100, default="Vendor Address Goes Here")
+#     contact = models.CharField(max_length=100, default="Phone Number")
+#     chat_resp_time = models.CharField(max_length=100, default="100")
+#     shipping_on_time = models.CharField(max_length=100, default="100")
+#     authentic_rating = models.CharField(max_length=100, default="100")
+#     days_return = models.CharField(max_length=100, default="100")
+#     warranty_period = models.CharField(max_length=100, default="100")
+#     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
 
-    class Meta:
-        verbose_name_plural = "Vendors"
+#     class Meta:
+#         verbose_name_plural = "Vendors"
 
-    def category_image(self):
-        return mark_safe('<img src="%s" width="50" height="50" />' % (self.image.url))
+#     def category_image(self):
+#         return mark_safe('<img src="%s" width="50" height="50" />' % (self.image.url))
     
-    def __str__(self):
-        return self.title
+#     def __str__(self):
+#         return self.title
     
 class Product(models.Model):
     pid = ShortUUIDField(unique=True, length=10, max_length=20, prefix="prod", alphabet="0123456789abcd")
@@ -117,8 +117,8 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, related_name='brand', blank=True)
     # Vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True)
 
-    price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="1.00")
-    old_price = models.DecimalField(max_digits=999999999999, decimal_places=2, default="0.00")
+    price = models.DecimalField(max_digits=10, decimal_places=2, default="1.00")
+    old_price = models.DecimalField(max_digits=10, decimal_places=2, default="0.00")
 
     specs = CKEditor5Field(null=True, blank=True)
     type = models.CharField(max_length=100, default="100% Cotton", null=True, blank=True)

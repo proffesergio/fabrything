@@ -1,10 +1,21 @@
 from django.db.models import FileField, ImageField, ForeignKey
+from rest_framework.response import Response
+from django.core.serializers import serialize
+import json
+from django.db import connection, models
+from rest_framework import serializers
+from django.urls.resolvers import URLPattern, get_resolver, URLResolver
 
-def getDynamicModels():
+def getDynamicFormModels():
     return {
         'product': 'ProductServices.Products',
         'category': 'ProductServices.Categories',
         'warehouse': 'InventoryServices.Warehouse',
+    }
+
+def getSuperAdminFormModels():
+    return {
+        'modules': 'userauthapp.Modules',
     }
 
 def checkisFileField(field):
@@ -68,3 +79,57 @@ def getDynamicFormFields(model_instance, domain_user_id):
                 
         fields[fielddata['type']].append(fielddata)
     return fields
+
+def renderResponse(data, message, status=200):
+    if status >= 200 and status < 300:
+        return Response({
+            'data': data,
+            'message': message,
+        }, status=status
+        )           
+    else:
+        if isinstance(data, dict):
+            return Response({
+                'errors': parseDictList(data),
+                'message': message,
+            }, status=status)
+        elif isinstance(data, list):
+            return Response({
+                'errors': data,
+                'message': message,
+
+            }, status=status
+            )
+        else:
+            return Response({
+                'errors': [str(data)],
+                'message': message,
+
+            }, status=status
+            )
+        
+
+def parseDictList(data):
+    values=[]
+    for key, value in data.items():
+        values.extend(value)
+
+    return values
+
+def convertModeltoJSON(model):
+    serialized_model=serialize('json',model)
+    serializers_data=json.loads(serialized_model)
+    modelItems=[]
+    for data in serializers_data:
+        data['fields']['id']=data['pk']
+        modelItems.append(data['fields'])
+    return modelItems
+
+def list_project_urls(patterns,parent_pattern=''):
+    url_list=[]
+    for pattern in patterns:
+        if isinstance(pattern,URLPattern):
+            url_list.append("/"+parent_pattern+str(pattern.pattern))
+        elif isinstance(pattern,URLResolver):
+            url_list.extend(list_project_urls(pattern.url_patterns,parent_pattern+str(pattern.pattern)))
+    return url_list

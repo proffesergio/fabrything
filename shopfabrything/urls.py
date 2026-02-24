@@ -21,6 +21,8 @@ urlpatterns = [
     # API Versioning
     path('api/v1/', include('fabrythingapp.api_urls')),
     path('api/v1/auth/', include('userauthapp.api_urls')),
+    path('api/vendor/', include('vendor.urls')),
+    path('api/v1/vendor/', include('vendor.urls')),
     
     # Legacy URLs (keep for backward compatibility)
     path('', include('fabrythingapp.urls')),

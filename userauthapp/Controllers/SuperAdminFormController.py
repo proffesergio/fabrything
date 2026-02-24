@@ -1,28 +1,33 @@
-from django.apps import apps
-from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
-from userauthapp.models import User
-from rest_framework.views import APIView
-from fabrythingapp.Helpers import getDynamicFormModels, getDynamicFormFields, getExcludeField, renderResponse
+from django.apps import apps
+from fabrythingapp.Helpers import getExcludeField, getSuperAdminFormModels, renderResponse
+from fabrythingapp.Permission import IsSuperAdmin
+from django.core.serializers import serialize
+import json
 
-class DynamicFormController(APIView):
+class SuperAdminDynamicFormController(APIView):
     authentication_classes = [JWTAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsSuperAdmin]
 
-    def post(self, request, modelName=None):
+    def get(self, request):
+        return renderResponse(
+            data='You are a Super Admin!',
+            message='Success',
+            status=200
+        )
+    
+    def post(self, request, modelName):
         # Checking if Model exists in DynamicForm Models
-        if modelName not in getDynamicFormModels():
+        if modelName not in getSuperAdminFormModels():
             return renderResponse(
                 data=f'Model "{modelName}" not found',
                 message='Error',
                 status=404
             )
         #Getting the Model Name from Dynamic Form Models
-        model = getDynamicFormModels()[modelName]
+        model = getSuperAdminFormModels()[modelName]
         model_class = apps.get_model(model)
 
         #Check if Model Class Exists
@@ -54,10 +59,7 @@ class DynamicFormController(APIView):
         # Creating a copy of Post Data for Manipulation
         fields = request.data.copy()
 
-        # Adding the Domain User ID and Added By User Id in the post data
-        fields['domain_user_id'] = request.user.domain_user_id
-        fields['added_by_user_id'] = User.objects.get(id=request.user.id) 
-
+        
         # Filtering the Post Data Fields by Model Fields and Eliminating the Extra Fields
         fieldsdata = { key:value for key, value in fields.items() if key in model_field and key not in exclude_fields}
         # All Model Fields Data 
@@ -97,41 +99,4 @@ class DynamicFormController(APIView):
             data = response_json,
             message = 'Data saved successfully'
         )
-    
-    def get(self, request, modelName):
-        if modelName not in getDynamicFormModels():
-            return renderResponse(
-                data='Model not found',
-                message='Model not found',
-                status=404
-            )
-        model = getDynamicFormModels()[modelName]
-        model_class = apps.get_model(model)
-
-        if model_class is None:
-            return renderResponse(
-                data='Model not found',
-                message='Model not found error',
-                status=404
-            )
-
-        model_instance = model_class()
-        fields = getDynamicFormFields(model_instance, request.user.domain_user_id)
-        return Response(
-            {
-                'data':fields,
-                'message': f'Form structure for {modelName} retrieved successfully'
-            }
-        )       
-        # Example dynamic form structure
-        form_structure = {
-            "fields": [
-                {"name": "first_name", "type": "text", "label": "First Name", "required": True},
-                {"name": "last_name", "type": "text", "label": "Last Name", "required": True},
-                {"name": "email", "type": "email", "label": "Email Address", "required": True},
-                {"name": "age", "type": "number", "label": "Age", "required": False},
-            ],
-            "submit_url": "/api/v1/submit-form/"
-        }
-        return Response(form_structure, status=status.HTTP_200_OK)
     

@@ -358,66 +358,6 @@ def product_details_view(request, pid):
     }
     return render(request, 'core/product-details.html', context)
 
-# Product Details View Start
-
-# def product_details_view(request, pid):
-#     """
-#     Display detailed product information
-#     """
-#     try:
-#         # Get product with all related data
-#         product = get_object_or_404(Product, pid=pid)
-        
-#         # Ensure stock_count has a default value
-#         if not hasattr(product, 'stock_count') or product.stock_count is None:
-#             product.stock_count = 0
-        
-#         # Get related data
-#         related_products = Product.objects.filter(
-#             category=product.category,
-#             stock_count__gt=0  # Only show products with stock
-#         ).exclude(pid=pid)[:8]
-        
-#         reviews = ProductReview.objects.filter(product=product).order_by('-date')
-        
-#         # Calculate average rating
-#         avg_rating = ProductReview.objects.filter(
-#             product=product
-#         ).aggregate(rating=Avg('rating'))
-        
-#         # Get product images
-#         product_image = ProductImages.objects.filter(product=product)
-        
-#         # Review form
-#         review_form = ProductReviewForm()
-#         make_review = True
-        
-#         # Check if user already reviewed
-#         if request.user.is_authenticated:
-#             user_review_exists = ProductReview.objects.filter(
-#                 user=request.user,
-#                 product=product
-#             ).exists()
-#             make_review = not user_review_exists
-        
-#         context = {
-#             'product': product,
-#             'product_image': product_image,
-#             'reviews': reviews,
-#             'avg_rating': avg_rating,
-#             'review_form': review_form,
-#             'make_review': make_review,
-#             'related_products': related_products,
-#         }
-        
-#         return render(request, 'core/product-details.html', context)
-        
-#     except Product.DoesNotExist:
-#         logger.warning(f"Product not found: {pid}")
-#         return render(request, 'errors/404.html', status=404)
-#     except Exception as e:
-#         logger.error(f"Error loading product details: {str(e)}")
-#         return render(request, 'errors/500.html', status=500)
 
 # Product Details View End 
 def tag_list(request, tag_slug=None):
